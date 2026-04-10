@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftCad}",
+            "name": "Debug SwiftCad",
+            "target": "SwiftCad",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug SwiftCad"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftCad}",
+            "name": "Release SwiftCad",
+            "target": "SwiftCad",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release SwiftCad"
+        }
+    ]
+}
