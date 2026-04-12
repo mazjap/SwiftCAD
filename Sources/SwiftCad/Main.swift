@@ -7,17 +7,21 @@ class Main {
         await Project(root: URL(filePath: "./output/"), options: .compression(.smallest)) {
             await Model("egg_ornament") {
                 EasterEggOrnament()
-                    .withMaterial(Material.plain(.yellow))
+                    .withMaterial(.plain(.yellow))
             }
             
             await Model("ornament_hook_rotated") {
                 OrnamentHook(isRotated: true)
-                    .withMaterial(Material.plain(.green))
+                    .withMaterial(.plain(.green))
             }
             
             await Model("ornament_hook") {
                 OrnamentHook(isRotated: false)
-                    .withMaterial(Material.plain(.green))
+                    .withMaterial(.plain(.green))
+            }
+            
+            await Model("street_sign") {
+                StreetSign(text: "Your Text")
             }
         }
     }
