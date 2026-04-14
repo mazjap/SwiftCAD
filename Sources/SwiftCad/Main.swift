@@ -27,6 +27,13 @@ class Main {
             await Model("keyboard_left") {
                 FerrisSweep()
             }
+            
+            await Model("hailey60_body") {
+                Hailey60KeyboardBody(
+                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 21, y: 25, z: 2), usbOverhang: 1.8, usbWidth: 9),
+                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6, y: 14.2, z: 4.5), openingDiameter: 5, openingOverhang: 2)
+                )
+            }
         }
     }
 }

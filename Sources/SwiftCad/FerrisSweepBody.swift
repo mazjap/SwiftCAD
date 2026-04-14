@@ -19,7 +19,7 @@ import Cadova
 // └────┘ = A TRRS female connector
 //
 // ┌|  |┐
-// |    | = A microcontroller (presumably a promicro, but RP2040-zero or others will work)
+// |    | = A microcontroller (I'm using a promicro, but RP2040-zero or others will work)
 // |    |
 // └────┘
 
