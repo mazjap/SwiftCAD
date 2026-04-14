@@ -23,6 +23,10 @@ class Main {
             await Model("street_sign") {
                 StreetSign(text: "Your Text")
             }
+            
+            await Model("keyboard_left") {
+                FerrisSweep()
+            }
         }
     }
 }
