@@ -30,7 +30,8 @@ struct Hailey60KeyboardBody: Shape3D {
     private let switchHoleSize: Double = 14
     private let spacingBetweenSwitchHole: Double = 5
     private let outerSpacing: Double = 2.5
-    private let thickness: Double = 1.6
+    private let minThickness: Double = 1.6
+    private let maxThickness: Double = 5.5
     
     private let microcontroller: MicrocontrollerDimensions
     private let trrs: TrrsDimensions
@@ -41,34 +42,35 @@ struct Hailey60KeyboardBody: Shape3D {
     }
     
     var body: any Geometry3D {
-        Stack(.x, spacing: spacingBetweenSwitchHole, alignment: .top) {
-            switchHolePolygons
-            
-            Stack(.y, spacing: outerSpacing, alignment: .right) {
-                trrsPolygon
-                
-                microcontrollerPolygon
-            }
-        }
-        .measuringBounds { holes, bounds in
-            Rectangle(bounds.size)
+        Union {
+            bounds
+                .extruded(height: maxThickness)
                 .aligned(at: .top)
-                .offset(amount: outerSpacing, style: .square)
                 .subtracting {
-                    holes
+                    switchHolePolygons
+                        .extruded(height: minThickness)
+                        .aligned(at: .top, .left, .front)
+                }
+                .aligned(at: .left, .front)
+                .subtracting {
+                    microcontrollerPolygon
+                        .extruded(height: microcontroller.mainBody.z)
+                        .aligned(at: .top, .left, .back)
+                        .translated(
+                            x: 6 * (switchHoleSize + spacingBetweenSwitchHole) + outerSpacing,
+                            y: 5 * (switchHoleSize + spacingBetweenSwitchHole)
+                        )
+                }
+                .subtracting {
+                    trrsPolygon
+                        .extruded(height: trrs.mainBody.z)
+                        .aligned(at: .top, .left, .front)
+                        .translated(
+                            x: 6 * (switchHoleSize + spacingBetweenSwitchHole) + outerSpacing + microcontroller.mainBody.x - trrs.mainBody.y - trrs.openingOverhang + outerSpacing,
+                            y: 5 * (switchHoleSize + spacingBetweenSwitchHole) - microcontroller.mainBody.y - microcontroller.usbOverhang - trrs.mainBody.x - spacingBetweenSwitchHole
+                        )
                 }
         }
-        .aligned(at: .bottom, .left)
-        .subtracting {
-            // Subtract triangle from TRRS to bottom-right most key switch
-            BezierPath2D(linesBetween: [
-                Vector2D((switchHoleSize + spacingBetweenSwitchHole) * 6 + microcontroller.mainBody.x + outerSpacing * 2, (switchHoleSize + spacingBetweenSwitchHole) * 5 - spacingBetweenSwitchHole - outerSpacing - microcontroller.mainBody.y - 6),
-                Vector2D((switchHoleSize + spacingBetweenSwitchHole) * 6 + microcontroller.mainBody.x + outerSpacing * 2, 0),
-                Vector2D((switchHoleSize + spacingBetweenSwitchHole) * 6 - spacingBetweenSwitchHole + outerSpacing * 2, 0)
-            ])
-            .filled()
-        }
-        .extruded(height: thickness)
     }
     
     private var switchHolePolygons: any Geometry2D {
@@ -83,9 +85,42 @@ struct Hailey60KeyboardBody: Shape3D {
         }
     }
     
-    private var microcontrollerPolygon: any Geometry2D {
+    private var bounds: any Geometry2D {
+        let minX = -outerSpacing
+        let minY = -outerSpacing
+        let maxSwitchX: Double = 6 * (switchHoleSize + spacingBetweenSwitchHole)
+        let maxX = maxSwitchX + microcontroller.mainBody.x + outerSpacing
+        let maxY = 5 * (switchHoleSize + spacingBetweenSwitchHole) - spacingBetweenSwitchHole + outerSpacing
         
-        Rectangle(microcontroller.mainBody.xy)
+        return Polygon([
+            Vector2D( // Bottom left
+                x: minX,
+                y: minY
+            ),
+            Vector2D( // Top left
+                x: minX,
+                y: maxY
+            ),
+            Vector2D( // Top right
+                x: maxX,
+                y: maxY
+            ),
+            Vector2D( // Middle-ish right
+                x: maxX,
+                y: maxY - outerSpacing - microcontroller.mainBody.y - outerSpacing - trrs.mainBody.x - spacingBetweenSwitchHole - outerSpacing
+            ),
+            Vector2D( // Middle-ish bottom
+                x: maxSwitchX,
+                y: minY
+            )
+        ])
+    }
+    
+    private var microcontrollerPolygon: any Geometry2D {
+        Stack(.y, alignment: .center) {
+            Rectangle(microcontroller.mainBody.xy)
+            Rectangle(x: (microcontroller.mainBody.x + microcontroller.usbWidth) / 2, y: microcontroller.usbOverhang)
+        }
     }
     
     private var trrsPolygon: any Geometry2D {
