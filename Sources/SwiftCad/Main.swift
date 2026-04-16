@@ -35,5 +35,7 @@ class Main {
                 )
             }
         }
+        
+        NSWorkspace.shared.open(URL(filePath: "./output"))
     }
 }
