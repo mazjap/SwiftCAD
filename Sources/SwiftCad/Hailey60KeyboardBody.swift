@@ -119,7 +119,7 @@ struct Hailey60KeyboardBody: Shape3D {
     private var microcontrollerPolygon: any Geometry2D {
         Stack(.y, alignment: .center) {
             Rectangle(microcontroller.mainBody.xy)
-            Rectangle(x: (microcontroller.mainBody.x + microcontroller.usbWidth) / 2, y: microcontroller.usbOverhang)
+            Rectangle(x: microcontroller.usbWidth, y: microcontroller.usbOverhang)
         }
     }
     

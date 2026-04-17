@@ -1,5 +1,6 @@
 import Cadova
 import Foundation
+import AppKit
 
 @main
 class Main {
@@ -30,8 +31,8 @@ class Main {
             
             await Model("hailey60_body") {
                 Hailey60KeyboardBody(
-                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 21, y: 25, z: 2), usbOverhang: 1.8, usbWidth: 9),
-                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6, y: 14.2, z: 4.5), openingDiameter: 5, openingOverhang: 2)
+                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
+                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2)
                 )
             }
         }
