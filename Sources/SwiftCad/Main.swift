@@ -29,14 +29,23 @@ class Main {
                 FerrisSweep()
             }
             
-            await Model("hailey60_body") {
+            await Model("hailey60_frame") {
                 Hailey60KeyboardBody(
                     microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
-                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2)
+                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2),
+                    frame: true
                 )
             }
             
-            await Model("modified_keycap") { // src: https://www.printables.com/model/399607-complete-cherry-mx-stem-keycap-set-optimized-for-3
+            await Model("hailey60_case") {
+                Hailey60KeyboardBody(
+                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
+                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2),
+                    frame: false
+                )
+            }
+            
+            await Model("modified_keycap") {
                 Import(model: URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/1U_blank.3mf"))
                     .rotated(.degrees(71.3), around: .x)
                     .subtracting {
