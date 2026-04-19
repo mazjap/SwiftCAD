@@ -35,6 +35,20 @@ class Main {
                     trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2)
                 )
             }
+            
+            await Model("modified_keycap") { // src: https://www.printables.com/model/399607-complete-cherry-mx-stem-keycap-set-optimized-for-3
+                Import(model: URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/1U_blank.3mf"))
+                    .rotated(.degrees(71.3), around: .x)
+                    .subtracting {
+                        let height = 4.995
+                        Circle(radius: 2.85)
+                            .stroked(width: 1, alignment: .outside, style: .round)
+                            .aligned(at: .center)
+                            .extruded(height: height)
+                            .translated(z: -height)
+                    }
+                    .rotated(.degrees(-71.3), around: .x)
+            }
         }
         
         NSWorkspace.shared.open(URL(filePath: "./output"))
