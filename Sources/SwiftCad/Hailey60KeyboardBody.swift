@@ -52,16 +52,22 @@ extension Hailey60KeyboardBody {
         init(microcontroller: MicrocontrollerDimensions, trrs: TrrsDimensions) {
             self.outerSpacing = spacingBetweenSwitchHole / 2
             self.wallThickness = 3
+            
             self.minSwitchX = outerSpacing
-            self.maxSwitchX = 6 * (switchHoleSize + spacingBetweenSwitchHole) - spacingBetweenSwitchHole + minSwitchX
+            self.maxSwitchX = minSwitchX + 6 * (switchHoleSize + spacingBetweenSwitchHole) - spacingBetweenSwitchHole
+            
             self.minSwitchY = outerSpacing
-            self.maxSwitchY = outerSpacing + 5 * (switchHoleSize + spacingBetweenSwitchHole) - spacingBetweenSwitchHole
+            self.maxSwitchY = minSwitchY + 5 * (switchHoleSize + spacingBetweenSwitchHole) - spacingBetweenSwitchHole
+            
             self.minMicrocontrollerX = maxSwitchX + spacingBetweenSwitchHole
             self.maxMicrocontrollerX = minMicrocontrollerX + microcontroller.mainBody.x
-            self.maxX = 6 * (switchHoleSize + spacingBetweenSwitchHole) + spacingBetweenSwitchHole + microcontroller.mainBody.x + outerSpacing
+            
+            self.maxX = maxMicrocontrollerX + outerSpacing
             self.maxY = maxSwitchY + outerSpacing
+            
             self.minMicrocontrollerY = maxY - (microcontroller.mainBody.y + microcontroller.usbOverhang)
-            self.minTrrsX = maxX - outerSpacing - trrs.openingOverhang - trrs.mainBody.y
+            
+            self.minTrrsX = maxX - trrs.openingOverhang - trrs.mainBody.y
             self.maxTrrsY = minMicrocontrollerY - spacingBetweenSwitchHole
             self.minTrrsY = maxTrrsY - trrs.mainBody.x
         }
@@ -84,12 +90,10 @@ struct Hailey60KeyboardBody: Shape3D {
     }
     
     var body: any Geometry3D {
-        Union {
-            if frame {
-                frameGeometry
-            } else {
-                caseGeometry
-            }
+        if frame {
+            frameGeometry
+        } else {
+            caseGeometry
         }
     }
     
@@ -106,10 +110,10 @@ struct Hailey60KeyboardBody: Shape3D {
             .subtracting {
                 microcontrollerPolygon
                     .extruded(height: dimensions.maxThickness)
-                    .aligned(at: .top, .left, .back)
+                    .aligned(at: .top, .left, .front)
                     .translated(
-                        x: 6 * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) + dimensions.outerSpacing,
-                        y: 5 * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole)
+                        x: dimensions.minMicrocontrollerX,
+                        y: dimensions.minMicrocontrollerY
                     )
             }
             .subtracting {
@@ -117,8 +121,8 @@ struct Hailey60KeyboardBody: Shape3D {
                     .extruded(height: dimensions.maxThickness)
                     .aligned(at: .top, .left, .front)
                     .translated(
-                        x: 6 * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) + dimensions.outerSpacing + microcontroller.mainBody.x - trrs.mainBody.y - trrs.openingOverhang + dimensions.outerSpacing,
-                        y: 5 * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - microcontroller.mainBody.y - microcontroller.usbOverhang - trrs.mainBody.x - dimensions.spacingBetweenSwitchHole
+                        x: dimensions.minTrrsX,
+                        y: dimensions.minTrrsY,
                     )
             }
             .aligned(at: .bottom)
@@ -161,7 +165,7 @@ struct Hailey60KeyboardBody: Shape3D {
                 
                 Rectangle(x: trrs.openingOverhang, y: trrs.mainBody.x)
                     .extruded(height: (trrs.mainBody.z - trrs.openingDiameter) / 2 + 1)
-                    .translated(x: dimensions.maxX - dimensions.outerSpacing - trrs.openingOverhang, y: dimensions.minTrrsY, z: 0)
+                    .translated(x: dimensions.maxX - trrs.openingOverhang, y: dimensions.minTrrsY, z: 0)
             }
             .translated(x: dimensions.wallThickness, y: dimensions.wallThickness, z: dimensions.minThickness + dimensions.bottomSupportHeight)
             .adding {
@@ -212,28 +216,49 @@ struct Hailey60KeyboardBody: Shape3D {
             )
             .extruded(height: dimensions.maxThickness + dimensions.bottomSupportHeight - dimensions.minThickness)
             .translated(x: dimensions.wallThickness + dimensions.minMicrocontrollerX + (microcontroller.mainBody.x - microcontrollerWallHole) / 2, y: dimensions.maxY + dimensions.wallThickness, z: dimensions.minThickness + dimensions.bottomSupportHeight)
-            
+        }
+        .subtracting {
             let trrsWallHole: Double = 9
             
             Rectangle(x: dimensions.wallThickness, y: trrsWallHole)
                 .extruded(height: dimensions.maxThickness + dimensions.bottomSupportHeight - dimensions.minThickness)
-                .translated(x: dimensions.maxX, y: dimensions.minTrrsY, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+                .translated(x: dimensions.maxX + dimensions.wallThickness, y: dimensions.minTrrsY + dimensions.wallThickness - (trrsWallHole - trrs.mainBody.x) / 2, z: dimensions.minThickness + dimensions.bottomSupportHeight)
         }
         .subtracting {
             latches
         }
     }
     
-    private var switchHolePolygons: any Geometry2D {
-        Stack(.y, spacing: dimensions.spacingBetweenSwitchHole) {
-            for _ in 0..<5 {
-                Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
-                    for _ in 0..<6 {
-                        Rectangle(dimensions.switchHoleSize)
-                    }
-                }
-            }
+    private var latches: any Geometry3D {
+        Union {
+            latchAttachedTo(edge: .top)
+                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness)
+            
+            latchAttachedTo(edge: .top)
+                .translated(x: (dimensions.maxSwitchX + dimensions.spacingBetweenSwitchHole - dimensions.minSwitchX) / 2, y: dimensions.wallThickness)
+            
+            latchAttachedTo(edge: .top)
+                .translated(x: dimensions.maxSwitchX - 20, y: dimensions.wallThickness)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness + dimensions.maxY)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: ((dimensions.maxX - dimensions.outerSpacing) - dimensions.minSwitchX) / 2, y: dimensions.wallThickness + dimensions.maxY)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: dimensions.maxX - dimensions.outerSpacing - 20, y: dimensions.wallThickness + dimensions.maxY)
+            
+            latchAttachedTo(edge: .left)
+                .translated(x: dimensions.wallThickness, y: dimensions.minSwitchY + 20)
+            
+            latchAttachedTo(edge: .left)
+                .translated(x: dimensions.wallThickness, y: dimensions.maxSwitchY - 20)
+            
+            latchAttachedTo(edge: .right)
+                .translated(x: dimensions.maxX + dimensions.wallThickness, y: dimensions.maxY - 20)
         }
+        .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
     }
     
     private var bounds: any Geometry2D {
@@ -267,6 +292,18 @@ struct Hailey60KeyboardBody: Shape3D {
         ])
     }
     
+    private var switchHolePolygons: any Geometry2D {
+        Stack(.y, spacing: dimensions.spacingBetweenSwitchHole) {
+            for _ in 0..<5 {
+                Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
+                    for _ in 0..<6 {
+                        Rectangle(dimensions.switchHoleSize)
+                    }
+                }
+            }
+        }
+    }
+    
     private var microcontrollerPolygon: any Geometry2D {
         Stack(.y, alignment: .center) {
             Rectangle(microcontroller.mainBody.xy)
@@ -279,38 +316,6 @@ struct Hailey60KeyboardBody: Shape3D {
             Rectangle(x: trrs.mainBody.y, y: trrs.mainBody.x)
             Rectangle(x: trrs.openingOverhang, y: trrs.openingDiameter)
         }
-    }
-    
-    private var latches: any Geometry3D {
-        Union {
-            latchAttachedTo(edge: .top)
-                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness)
-            
-            latchAttachedTo(edge: .top)
-                .translated(x: (dimensions.maxSwitchX + dimensions.spacingBetweenSwitchHole - dimensions.minSwitchX) / 2, y: dimensions.wallThickness)
-            
-            latchAttachedTo(edge: .top)
-                .translated(x: dimensions.maxSwitchX - 20, y: dimensions.wallThickness)
-            
-            latchAttachedTo(edge: .bottom)
-                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness + dimensions.maxY)
-            
-            latchAttachedTo(edge: .bottom)
-                .translated(x: ((dimensions.maxX - dimensions.outerSpacing) - dimensions.minSwitchX) / 2, y: dimensions.wallThickness + dimensions.maxY)
-            
-            latchAttachedTo(edge: .bottom)
-                .translated(x: dimensions.maxX - dimensions.outerSpacing - 20, y: dimensions.wallThickness + dimensions.maxY)
-            
-            latchAttachedTo(edge: .left)
-                .translated(x: dimensions.wallThickness, y: dimensions.minSwitchY + 20)
-            
-            latchAttachedTo(edge: .left)
-                .translated(x: dimensions.wallThickness, y: dimensions.maxSwitchY - 20)
-            
-            latchAttachedTo(edge: .right)
-                .translated(x: dimensions.maxX, y: dimensions.maxY - 20)
-        }
-        .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
     }
     
     private func latchAttachedTo(edge: Edge) -> any Geometry3D {
