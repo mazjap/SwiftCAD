@@ -51,7 +51,7 @@ extension Hailey60KeyboardBody {
         
         init(microcontroller: MicrocontrollerDimensions, trrs: TrrsDimensions) {
             self.outerSpacing = spacingBetweenSwitchHole / 2
-            self.wallThickness = outerSpacing / 2
+            self.wallThickness = 3
             self.minSwitchX = outerSpacing
             self.maxSwitchX = 6 * (switchHoleSize + spacingBetweenSwitchHole) - spacingBetweenSwitchHole + minSwitchX
             self.minSwitchY = outerSpacing
@@ -84,10 +84,12 @@ struct Hailey60KeyboardBody: Shape3D {
     }
     
     var body: any Geometry3D {
-        if frame {
-            frameGeometry
-        } else {
-            caseGeometry
+        Union {
+            if frame {
+                frameGeometry
+            } else {
+                caseGeometry
+            }
         }
     }
     
@@ -161,7 +163,10 @@ struct Hailey60KeyboardBody: Shape3D {
                     .extruded(height: (trrs.mainBody.z - trrs.openingDiameter) / 2 + 1)
                     .translated(x: dimensions.maxX - dimensions.outerSpacing - trrs.openingOverhang, y: dimensions.minTrrsY, z: 0)
             }
-            .translated(x: dimensions.outerSpacing / 2, y: dimensions.outerSpacing / 2, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+            .translated(x: dimensions.wallThickness, y: dimensions.wallThickness, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+            .adding {
+                latches
+            }
     }
     
     private var caseGeometry: any Geometry3D {
@@ -189,7 +194,12 @@ struct Hailey60KeyboardBody: Shape3D {
             .extruded(height: dimensions.bottomSupportHeight)
             .translated(z: dimensions.minThickness)
             
-            bounds.stroked(width: dimensions.outerSpacing / 2, alignment: .outside, style: .round)
+            let filletRadius = dimensions.wallThickness / 2
+            
+            bounds.stroked(width: dimensions.wallThickness, alignment: .outside, style: .round)
+                .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight + dimensions.maxThickness, topEdge: .fillet(radius: filletRadius))
+            
+            bounds.stroked(width: filletRadius, alignment: .outside, style: .round)
                 .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight + dimensions.maxThickness)
         }
         .aligned(at: .bottom, .left, .front)
@@ -198,16 +208,19 @@ struct Hailey60KeyboardBody: Shape3D {
             
             Rectangle(
                 x: microcontrollerWallHole,
-                y: dimensions.outerSpacing / 2
+                y: dimensions.wallThickness
             )
             .extruded(height: dimensions.maxThickness + dimensions.bottomSupportHeight - dimensions.minThickness)
-            .translated(x: dimensions.wallThickness + dimensions.minMicrocontrollerX + (microcontroller.mainBody.x - microcontrollerWallHole) / 2, y: dimensions.maxY + dimensions.outerSpacing / 2, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+            .translated(x: dimensions.wallThickness + dimensions.minMicrocontrollerX + (microcontroller.mainBody.x - microcontrollerWallHole) / 2, y: dimensions.maxY + dimensions.wallThickness, z: dimensions.minThickness + dimensions.bottomSupportHeight)
             
             let trrsWallHole: Double = 9
             
             Rectangle(x: dimensions.wallThickness, y: trrsWallHole)
                 .extruded(height: dimensions.maxThickness + dimensions.bottomSupportHeight - dimensions.minThickness)
-                .translated(x: dimensions.maxX - dimensions.wallThickness, y: dimensions.wallThickness + dimensions.minTrrsY + dimensions.wallThickness / 2 - abs(trrs.openingDiameter - trrsWallHole) / 2, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+                .translated(x: dimensions.maxX, y: dimensions.minTrrsY, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+        }
+        .subtracting {
+            latches
         }
     }
     
@@ -267,4 +280,65 @@ struct Hailey60KeyboardBody: Shape3D {
             Rectangle(x: trrs.openingOverhang, y: trrs.openingDiameter)
         }
     }
+    
+    private var latches: any Geometry3D {
+        Union {
+            latchAttachedTo(edge: .top)
+                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness)
+            
+            latchAttachedTo(edge: .top)
+                .translated(x: (dimensions.maxSwitchX + dimensions.spacingBetweenSwitchHole - dimensions.minSwitchX) / 2, y: dimensions.wallThickness)
+            
+            latchAttachedTo(edge: .top)
+                .translated(x: dimensions.maxSwitchX - 20, y: dimensions.wallThickness)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness + dimensions.maxY)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: ((dimensions.maxX - dimensions.outerSpacing) - dimensions.minSwitchX) / 2, y: dimensions.wallThickness + dimensions.maxY)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: dimensions.maxX - dimensions.outerSpacing - 20, y: dimensions.wallThickness + dimensions.maxY)
+            
+            latchAttachedTo(edge: .left)
+                .translated(x: dimensions.wallThickness, y: dimensions.minSwitchY + 20)
+            
+            latchAttachedTo(edge: .left)
+                .translated(x: dimensions.wallThickness, y: dimensions.maxSwitchY - 20)
+            
+            latchAttachedTo(edge: .right)
+                .translated(x: dimensions.maxX, y: dimensions.maxY - 20)
+        }
+        .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
+    }
+    
+    private func latchAttachedTo(edge: Edge) -> any Geometry3D {
+        let rotation: Angle = switch edge {
+        case .bottom: .degrees(0)
+        case .top: .degrees(180)
+        case .right: .degrees(270)
+        case .left: .degrees(90)
+        }
+        
+        let width: Double = 1.5
+        let height: Double = 2
+        let maxDepth: Double = dimensions.wallThickness / 2
+        
+        return Polygon([
+            Vector2D(0, 0),
+            Vector2D(height, 0),
+            Vector2D(height * 0.6, 0.95 * maxDepth),
+            Vector2D(height * 0.5, maxDepth),
+            Vector2D(height * 0.4, 0.95 * maxDepth),
+        ])
+        .extruded(height: width)
+        .rotated(.degrees(-90), around: .y)
+        .rotated(rotation, around: .z)
+        .aligned(at: edge == .top ? .back : .front, .bottom, edge == .left ? .right : .left)
+    }
+}
+
+enum Edge {
+    case top, right, bottom, left
 }
