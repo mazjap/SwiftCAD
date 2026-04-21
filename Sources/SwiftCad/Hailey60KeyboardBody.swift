@@ -227,6 +227,15 @@ struct Hailey60KeyboardBody: Shape3D {
         .subtracting {
             latches
         }
+        .adding {
+            wedgeBase
+        }
+        .rotated(.degrees(7), around: .x)
+        .subtracting {
+            Rectangle(x: dimensions.maxX * 2, y: dimensions.maxY * 2)
+                .extruded(height: 100)
+                .translated(z: -100)
+        }
     }
     
     private var latches: any Geometry3D {
@@ -259,6 +268,17 @@ struct Hailey60KeyboardBody: Shape3D {
                 .translated(x: dimensions.maxX + dimensions.wallThickness, y: dimensions.maxY - 20)
         }
         .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
+    }
+    
+    private var wedgeBase: any Geometry3D {
+        Union {
+            bounds
+            
+            bounds.stroked(width: dimensions.wallThickness, alignment: .outside, style: .round)
+        }
+        .aligned(at: .bottom, .left)
+        .extruded(height: 20)
+        .translated(z: -20)
     }
     
     private var bounds: any Geometry2D {
@@ -327,8 +347,8 @@ struct Hailey60KeyboardBody: Shape3D {
         }
         
         let width: Double = 1.5
-        let height: Double = 2
-        let maxDepth: Double = dimensions.wallThickness / 2
+        let height: Double = dimensions.maxThickness
+        let maxDepth: Double = 0.8
         
         return Polygon([
             Vector2D(0, 0),
