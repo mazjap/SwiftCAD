@@ -244,28 +244,10 @@ struct Hailey60KeyboardBody: Shape3D {
                 .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness)
             
             latchAttachedTo(edge: .top)
-                .translated(x: (dimensions.maxSwitchX + dimensions.spacingBetweenSwitchHole - dimensions.minSwitchX) / 2, y: dimensions.wallThickness)
-            
-            latchAttachedTo(edge: .top)
                 .translated(x: dimensions.maxSwitchX - 20, y: dimensions.wallThickness)
             
             latchAttachedTo(edge: .bottom)
-                .translated(x: dimensions.minSwitchX + 20, y: dimensions.wallThickness + dimensions.maxY)
-            
-            latchAttachedTo(edge: .bottom)
                 .translated(x: ((dimensions.maxX - dimensions.outerSpacing) - dimensions.minSwitchX) / 2, y: dimensions.wallThickness + dimensions.maxY)
-            
-            latchAttachedTo(edge: .bottom)
-                .translated(x: dimensions.maxX - dimensions.outerSpacing - 20, y: dimensions.wallThickness + dimensions.maxY)
-            
-            latchAttachedTo(edge: .left)
-                .translated(x: dimensions.wallThickness, y: dimensions.minSwitchY + 20)
-            
-            latchAttachedTo(edge: .left)
-                .translated(x: dimensions.wallThickness, y: dimensions.maxSwitchY - 20)
-            
-            latchAttachedTo(edge: .right)
-                .translated(x: dimensions.maxX + dimensions.wallThickness, y: dimensions.maxY - 20)
         }
         .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
     }
