@@ -24,19 +24,25 @@ import Cadova
 // └────┘
 
 struct FerrisSweep: Shape3D {
+    private let microcontroller: MicrocontrollerDimensions
+    private let trrs: TrrsDimensions
+    private let fingers: FingerOffsets
     private let switchHoleSize: Double = 14
     private let spacingBetweenSwitchHole: Double = 5
     private let outerPadding: Double = 8
     
-    // This is a rough estimation using my fingers when slightly curled (like when using a keyboard)
-    let pinkyOffset = 0.0
-    var ringOffset = 20.5
-    var middleOffset = 29.5
-    var pointerOffset = 20.5
-    var otherOffset = 18.5
+    private var extraColOffset: Double {
+        fingers.pointer - 2
+    }
+    
+    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, fingerOffsets: FingerOffsets) {
+        self.microcontroller = microcontrollerDimensions
+        self.trrs = trrsDimensions
+        self.fingers = fingerOffsets
+    }
     
     private var columnVerticalOffsets: [Double] {
-        [pinkyOffset, ringOffset, middleOffset, pointerOffset, otherOffset]
+        [fingers.pinky, fingers.ring, fingers.middle, fingers.pointer, extraColOffset]
     }
     
     var body: any Geometry3D {
@@ -59,7 +65,7 @@ struct FerrisSweep: Shape3D {
             switchShape(
                 topLeft: Vector2D(
                     3.75 * (switchHoleSize + spacingBetweenSwitchHole),
-                    otherOffset - 3 * (switchHoleSize + spacingBetweenSwitchHole)
+                    extraColOffset - 3 * (switchHoleSize + spacingBetweenSwitchHole)
                 )
             )
             .rotated(.degrees(-10), around: .center)
@@ -67,7 +73,7 @@ struct FerrisSweep: Shape3D {
             switchShape(
                 topLeft: Vector2D(
                     4.8 * (switchHoleSize + spacingBetweenSwitchHole),
-                    otherOffset - 3 * (switchHoleSize + spacingBetweenSwitchHole) - 6
+                    extraColOffset - 3 * (switchHoleSize + spacingBetweenSwitchHole) - 6
                 )
             )
             .rotated(.degrees(-20), around: .center)
@@ -77,12 +83,12 @@ struct FerrisSweep: Shape3D {
     var outline: any Geometry2D {
         BezierPath(
             linesBetween: [
-                Vector2D(switchOffsetForRowAt(index: 0) - outerPadding, pinkyOffset + outerPadding),
-                Vector2D(switchOffsetForRowAt(index: 1) - outerPadding, ringOffset + outerPadding),
-                Vector2D(switchOffsetForRowAt(index: 2) - outerPadding, middleOffset + outerPadding),
-                Vector2D(switchOffsetForRowAt(index: 2) + switchHoleSize + outerPadding, middleOffset + outerPadding),
-                Vector2D(switchOffsetForRowAt(index: 3) + switchHoleSize + outerPadding, pointerOffset + outerPadding),
-                Vector2D(switchOffsetForRowAt(index: 4) + switchHoleSize + outerPadding, otherOffset + outerPadding)
+                Vector2D(switchOffsetForRowAt(index: 0) - outerPadding, fingers.pinky + outerPadding),
+                Vector2D(switchOffsetForRowAt(index: 1) - outerPadding, fingers.ring + outerPadding),
+                Vector2D(switchOffsetForRowAt(index: 2) - outerPadding, fingers.middle + outerPadding),
+                Vector2D(switchOffsetForRowAt(index: 2) + switchHoleSize + outerPadding, fingers.middle + outerPadding),
+                Vector2D(switchOffsetForRowAt(index: 3) + switchHoleSize + outerPadding, fingers.pointer + outerPadding),
+                Vector2D(switchOffsetForRowAt(index: 4) + switchHoleSize + outerPadding, extraColOffset + outerPadding)
             ] + []
         ).stroked(width: 1, style: .round)
     }

@@ -25,8 +25,12 @@ class Main {
                 StreetSign(text: "Your Text")
             }
             
-            await Model("keyboard_left") {
-                FerrisSweep()
+            await Model("ferris_sweep") {
+                FerrisSweep(
+                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
+                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2),
+                    fingerOffsets: FingerOffsets()
+                )
             }
             
             await Model("hailey60_frame") {
