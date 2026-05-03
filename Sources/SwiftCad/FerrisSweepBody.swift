@@ -43,6 +43,9 @@ extension FerrisSweep {
         let columnVerticalOffsets: [Double]
         let thumbKeysXOffset: Double
         
+        let microcontrollerMinX: Double, microcontrollerMaxX: Double, microcontrollerMinY: Double, microcontrollerMaxY: Double
+        let trrsMinX: Double, trrsMaxX: Double, trrsMinY: Double, trrsMaxY: Double
+        
         init(microcontroller: MicrocontrollerDimensions, trrs: TrrsDimensions, fingers: FingerOffsets) {
             self.outerSpacing = spacingBetweenSwitchHole / 2
             
@@ -75,6 +78,16 @@ extension FerrisSweep {
             
             self.columnVerticalOffsets = fingers.orderedOffsets + [otherMinY]
             self.thumbKeysXOffset = 3.6 * (switchHoleSize + spacingBetweenSwitchHole)
+            
+            self.microcontrollerMinX = otherMaxX + spacingBetweenSwitchHole
+            self.microcontrollerMaxX = microcontrollerMinX + microcontroller.mainBody.x
+            self.microcontrollerMaxY = otherMaxY
+            self.microcontrollerMinY = microcontrollerMaxY - (microcontroller.usbOverhang + microcontroller.mainBody.y)
+            
+            self.trrsMaxX = microcontrollerMaxX
+            self.trrsMinX = trrsMaxX - (trrs.mainBody.y + trrs.openingOverhang)
+            self.trrsMaxY = microcontrollerMinY - spacingBetweenSwitchHole
+            self.trrsMinY = trrsMaxY - (trrs.mainBody.x)
         }
     }
 }
@@ -101,30 +114,65 @@ struct FerrisSweep: Shape3D {
         .extruded(height: 2)
     }
     
-    var switchHoles: any Geometry2D {
+    private var switchHoles: any Geometry2D {
         Union {
             Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
-                for offset in dimensions.columnVerticalOffsets {
-                    Stack(.y, spacing: dimensions.spacingBetweenSwitchHole) {
-                        for _ in 1...3 {
-                            Rectangle(dimensions.switchHoleSize)
-                        }
-                    }
-                    .translated(y: offset)
+                columnSwitchsShapes
+                
+                Stack(.y, spacing: dimensions.spacingBetweenSwitchHole, alignment: .right) {
+                    trrsShape
+                    
+                    microcontrollerShape
                 }
+                .aligned(at: .top)
+                .translated(y: dimensions.microcontrollerMaxY)
             }
             
-            Rectangle(dimensions.switchHoleSize)
-                .translated(x: dimensions.thumbKeysXOffset)
-                .rotated(.degrees(-10), around: .center)
-            
-            Rectangle(dimensions.switchHoleSize)
-                .translated(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5)
-                .rotated(.degrees(-20), around: .center)
+            thumbClusterSwitchShapes
         }
     }
     
-    var outline: any Geometry2D {
+    private var columnSwitchsShapes: any Geometry2D {
+        Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
+            for offset in dimensions.columnVerticalOffsets {
+                Stack(.y, spacing: dimensions.spacingBetweenSwitchHole) {
+                    for _ in 1...3 {
+                        Rectangle(dimensions.switchHoleSize)
+                    }
+                }
+                .translated(y: offset)
+            }
+        }
+    }
+    
+    @GeometryBuilder2D
+    private var thumbClusterSwitchShapes: any Geometry2D {
+        Rectangle(dimensions.switchHoleSize)
+            .translated(x: dimensions.thumbKeysXOffset)
+            .rotated(.degrees(-10), around: .center)
+        
+        Rectangle(dimensions.switchHoleSize)
+            .translated(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5)
+            .rotated(.degrees(-20), around: .center)
+    }
+    
+    private var microcontrollerShape: any Geometry2D {
+        Stack(.y, spacing: 0, alignment: .center) {
+            Rectangle(x: microcontroller.mainBody.x, y: microcontroller.mainBody.y)
+            
+            Rectangle(x: microcontroller.usbWidth, y: microcontroller.usbOverhang)
+        }
+    }
+    
+    private var trrsShape: any Geometry2D {
+        Stack(.x, spacing: 0, alignment: .center) {
+            Rectangle(x: trrs.mainBody.y, y: trrs.mainBody.x)
+            
+            Rectangle(x: trrs.openingOverhang, y: trrs.openingDiameter)
+        }
+    }
+    
+    private var outline: any Geometry2D {
         let radius = dimensions.switchHoleSize / 2
         let hypotenuse = (radius * radius * 2).squareRoot()
         
@@ -137,7 +185,13 @@ struct FerrisSweep: Shape3D {
             Vector2D(dimensions.middleMaxX, dimensions.middleMaxY),
             Vector2D(dimensions.pointerMaxX, dimensions.pointerMaxY),
             Vector2D(dimensions.otherMaxX, dimensions.otherMaxY),
-            // Microcontroller here
+            // Microcontroller
+            Vector2D(dimensions.microcontrollerMinX, dimensions.microcontrollerMaxY),
+            Vector2D(dimensions.microcontrollerMaxX, dimensions.microcontrollerMaxY),
+            Vector2D(dimensions.microcontrollerMaxX, dimensions.microcontrollerMinY),
+            // TRRS
+            Vector2D(dimensions.trrsMaxX, dimensions.trrsMaxY),
+            Vector2D(dimensions.trrsMaxX, dimensions.trrsMinY),
             // Thank you precalc for teaching me trig haha 🙏
             Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(45 - 20)) * hypotenuse),
             Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-45 - 20)) * hypotenuse),
