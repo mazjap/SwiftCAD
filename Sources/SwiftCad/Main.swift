@@ -27,24 +27,24 @@ class Main {
             
             await Model("ferris_sweep") {
                 FerrisSweep(
-                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
-                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2),
-                    fingerOffsets: FingerOffsets()
+                    microcontrollerDimensions: .myRp2040,
+                    trrsDimensions: .mine,
+                    fingerOffsets: .mine
                 )
             }
             
             await Model("hailey60_frame") {
                 Hailey60KeyboardBody(
-                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
-                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2),
+                    microcontrollerDimensions: .myRp2040,
+                    trrsDimensions: .mine,
                     frame: true
                 )
             }
             
             await Model("hailey60_case") {
                 Hailey60KeyboardBody(
-                    microcontrollerDimensions: MicrocontrollerDimensions(mainBody: Vector3D(x: 18.5, y: 23.8, z: 1.2), usbOverhang: 1.1, usbWidth: 9),
-                    trrsDimensions: TrrsDimensions(mainBody: Vector3D(x: 6.2, y: 12.4, z: 5), openingDiameter: 5, openingOverhang: 2),
+                    microcontrollerDimensions: .myRp2040,
+                    trrsDimensions: .mine,
                     frame: false
                 )
             }

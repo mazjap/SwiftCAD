@@ -106,27 +106,23 @@ struct FerrisSweep: Shape3D {
     }
     
     var body: any Geometry3D {
-        Union {
-            switchHoles
-            
-            outline
-        }
-        .extruded(height: 2)
+        outline
+            .offset(amount: dimensions.outerSpacing, style: .round)
+            .subtracting {
+                switchHoles
+                
+                microcontrollerShape
+                    .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing)
+                
+                trrsShape
+                    .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
+            }
+            .extruded(height: dimensions.minThickness)
     }
     
     private var switchHoles: any Geometry2D {
         Union {
-            Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
-                columnSwitchsShapes
-                
-                Stack(.y, spacing: dimensions.spacingBetweenSwitchHole, alignment: .right) {
-                    trrsShape
-                    
-                    microcontrollerShape
-                }
-                .aligned(at: .top)
-                .translated(y: dimensions.microcontrollerMaxY)
-            }
+            columnSwitchsShapes
             
             thumbClusterSwitchShapes
         }
@@ -162,6 +158,7 @@ struct FerrisSweep: Shape3D {
             
             Rectangle(x: microcontroller.usbWidth, y: microcontroller.usbOverhang)
         }
+        .aligned(at: .bottom, .left)
     }
     
     private var trrsShape: any Geometry2D {
@@ -170,6 +167,7 @@ struct FerrisSweep: Shape3D {
             
             Rectangle(x: trrs.openingOverhang, y: trrs.openingDiameter)
         }
+        .aligned(at: .bottom, .left)
     }
     
     private var outline: any Geometry2D {
@@ -202,7 +200,5 @@ struct FerrisSweep: Shape3D {
             Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY)
         ])
         .filled()
-        .offset(amount: 0.1, style: .round)
-        .stroked(width: 2, alignment: .outside, style: .round)
     }
 }
