@@ -49,6 +49,14 @@ class Main {
                 )
             }
             
+            await Model("switch_container_frame") {
+                SwitchContainer(isFrame: true)
+            }
+            
+            await Model("switch_container_lid") {
+                SwitchContainer(isFrame: false)
+            }
+            
             await Model("modified_keycap") {
                 Import(model: URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/1U_blank.3mf"))
                     .rotated(.degrees(71.3), around: .x)
