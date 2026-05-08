@@ -174,31 +174,28 @@ struct FerrisSweep: Shape3D {
         let radius = dimensions.switchHoleSize / 2
         let hypotenuse = (radius * radius * 2).squareRoot()
         
-        
-        return BezierPath2D(linesBetween: [
-            Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY),
-            Vector2D(dimensions.pinkyMinX, dimensions.pinkyMaxY),
-            Vector2D(dimensions.ringMinX, dimensions.ringMaxY),
-            Vector2D(dimensions.middleMinX, dimensions.middleMaxY),
-            Vector2D(dimensions.middleMaxX, dimensions.middleMaxY),
-            Vector2D(dimensions.pointerMaxX, dimensions.pointerMaxY),
-            Vector2D(dimensions.otherMaxX, dimensions.otherMaxY),
+        return BezierPath2D(startPoint: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
+            .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMaxY))
+            .addingLine(to: Vector2D(dimensions.ringMinX, dimensions.ringMaxY))
+            .addingLine(to: Vector2D(dimensions.middleMinX, dimensions.middleMaxY))
+            .addingLine(to: Vector2D(dimensions.middleMaxX, dimensions.middleMaxY))
+//            .addingLine(to: Vector2D(dimensions.pointerMaxX, dimensions.pointerMaxY)) // I think it looks a little better without the pointer finger vertex 🤷‍♂️
+            .addingLine(to: Vector2D(dimensions.otherMaxX, dimensions.otherMaxY))
             // Microcontroller
-            Vector2D(dimensions.microcontrollerMinX, dimensions.microcontrollerMaxY),
-            Vector2D(dimensions.microcontrollerMaxX, dimensions.microcontrollerMaxY),
-            Vector2D(dimensions.microcontrollerMaxX, dimensions.microcontrollerMinY),
+            .addingLine(to: Vector2D(dimensions.microcontrollerMinX, dimensions.microcontrollerMaxY))
+            .addingLine(to: Vector2D(dimensions.microcontrollerMaxX, dimensions.microcontrollerMaxY))
+            .addingLine(to: Vector2D(dimensions.microcontrollerMaxX, dimensions.microcontrollerMinY))
             // TRRS
-            Vector2D(dimensions.trrsMaxX, dimensions.trrsMaxY),
-            Vector2D(dimensions.trrsMaxX, dimensions.trrsMinY),
+            .addingLine(to: Vector2D(dimensions.trrsMaxX, dimensions.trrsMaxY))
+            .addingLine(to: Vector2D(dimensions.trrsMaxX, dimensions.trrsMinY))
             // Thank you precalc for teaching me trig haha 🙏
-            Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(45 - 20)) * hypotenuse),
-            Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-45 - 20)) * hypotenuse),
-            Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-135 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-135 - 20)) * hypotenuse),
-            Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize / 2 + cos(.degrees(-45 - 10)) * hypotenuse, dimensions.switchHoleSize / 2 + sin(.degrees(-45 - 10)) * hypotenuse),
-            Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize / 2 + cos(.degrees(-135 - 10)) * hypotenuse, dimensions.switchHoleSize / 2 + sin(.degrees(-135 - 10)) * hypotenuse),
-            Vector2D(dimensions.pinkyMaxX, dimensions.pinkyMinY),
-            Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY)
-        ])
-        .filled()
+            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(45 - 20)) * hypotenuse))
+            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-45 - 20)) * hypotenuse))
+            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-135 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-135 - 20)) * hypotenuse))
+            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize / 2 + cos(.degrees(-45 - 10)) * hypotenuse, dimensions.switchHoleSize / 2 + sin(.degrees(-45 - 10)) * hypotenuse))
+            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize / 2 + cos(.degrees(-135 - 10)) * hypotenuse, dimensions.switchHoleSize / 2 + sin(.degrees(-135 - 10)) * hypotenuse))
+            .addingLine(to: Vector2D(dimensions.pinkyMaxX, dimensions.pinkyMinY))
+            .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
+            .filled()
     }
 }
