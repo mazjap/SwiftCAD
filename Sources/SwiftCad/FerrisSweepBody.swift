@@ -23,6 +23,13 @@ import Cadova
 // |   |
 // └───┘
 
+enum FerrisSweepColumn: CaseIterable {
+    case finger(NonThumbFinger)
+    case other
+    
+    static let allCases: [FerrisSweepColumn] = NonThumbFinger.allCases.reversed().map(FerrisSweepColumn.finger) + [.other]
+}
+
 extension FerrisSweep {
     struct Dimensions {
         let switchHoleSize: Double = 14.1
@@ -117,7 +124,7 @@ struct FerrisSweep: Shape3D {
                 trrsShape
                     .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
             }
-            .extruded(height: dimensions.minThickness)
+            .extruded(height: dimensions.maxThickness)
     }
     
     private var switchHoles: any Geometry2D {
@@ -197,5 +204,14 @@ struct FerrisSweep: Shape3D {
             .addingLine(to: Vector2D(dimensions.pinkyMaxX, dimensions.pinkyMinY))
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .filled()
+    }
+    
+    private func columnOffset(for column: FerrisSweepColumn) -> Double {
+        switch column {
+        case let .finger(finger):
+            fingers.offset(for: finger)
+        case .other:
+            dimensions.otherMinY
+        }
     }
 }
