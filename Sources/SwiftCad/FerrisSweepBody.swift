@@ -125,6 +125,9 @@ struct FerrisSweep: Shape3D {
                     .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
             }
             .extruded(height: dimensions.maxThickness)
+            .subtracting {
+                columnBottomCutout
+            }
     }
     
     private var switchHoles: any Geometry2D {
@@ -204,6 +207,15 @@ struct FerrisSweep: Shape3D {
             .addingLine(to: Vector2D(dimensions.pinkyMaxX, dimensions.pinkyMinY))
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .filled()
+    }
+    private var columnBottomCutout: any Geometry3D {
+        Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
+            for column in FerrisSweepColumn.allCases {
+                Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize * 3 + dimensions.spacingBetweenSwitchHole * 2 + dimensions.outerSpacing)
+                    .translated(y: columnOffset(for: column) - dimensions.outerSpacing / 2)
+            }
+        }
+        .extruded(height: dimensions.maxThickness - dimensions.minThickness)
     }
     
     private func columnOffset(for column: FerrisSweepColumn) -> Double {
