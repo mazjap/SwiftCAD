@@ -209,11 +209,21 @@ struct FerrisSweep: Shape3D {
             .filled()
     }
     private var columnBottomCutout: any Geometry3D {
-        Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
-            for column in FerrisSweepColumn.allCases {
-                Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize * 3 + dimensions.spacingBetweenSwitchHole * 2 + dimensions.outerSpacing)
-                    .translated(y: columnOffset(for: column) - dimensions.outerSpacing / 2)
+        Union {
+            Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
+                for column in FerrisSweepColumn.allCases {
+                    Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize * 3 + dimensions.spacingBetweenSwitchHole * 2 + dimensions.outerSpacing)
+                        .translated(y: columnOffset(for: column) - dimensions.outerSpacing / 2)
+                }
             }
+            
+            Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize + dimensions.outerSpacing)
+                .translated(x: dimensions.thumbKeysXOffset, y: -dimensions.outerSpacing / 2)
+                .rotated(.degrees(-10), around: .center)
+            
+            Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize + dimensions.outerSpacing)
+                .translated(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5 - dimensions.outerSpacing / 2)
+                .rotated(.degrees(-20), around: .center)
         }
         .extruded(height: dimensions.maxThickness - dimensions.minThickness)
     }
