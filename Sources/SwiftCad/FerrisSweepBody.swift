@@ -53,6 +53,8 @@ extension FerrisSweep {
         let microcontrollerMinX: Double, microcontrollerMaxX: Double, microcontrollerMinY: Double, microcontrollerMaxY: Double
         let trrsMinX: Double, trrsMaxX: Double, trrsMinY: Double, trrsMaxY: Double
         
+        let maxX: Double
+        
         init(microcontroller: MicrocontrollerDimensions, trrs: TrrsDimensions, fingers: FingerOffsets) {
             self.outerSpacing = spacingBetweenSwitchHole / 2
             
@@ -95,6 +97,8 @@ extension FerrisSweep {
             self.trrsMinX = trrsMaxX - (trrs.mainBody.y + trrs.openingOverhang)
             self.trrsMaxY = microcontrollerMinY - spacingBetweenSwitchHole
             self.trrsMinY = trrsMaxY - (trrs.mainBody.x)
+            
+            self.maxX = microcontrollerMaxX + outerSpacing
         }
     }
 }
@@ -113,21 +117,40 @@ struct FerrisSweep: Shape3D {
     }
     
     var body: any Geometry3D {
-        outline
-            .offset(amount: dimensions.outerSpacing, style: .round)
-            .subtracting {
-                switchHoles
-                
-                microcontrollerShape
-                    .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing)
-                
-                trrsShape
-                    .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
-            }
-            .extruded(height: dimensions.maxThickness)
-            .subtracting {
-                columnBottomCutout
-            }
+        Union {
+            outline
+                .offset(amount: dimensions.outerSpacing, style: .round)
+                .subtracting {
+                    switchHoles
+                    
+                    microcontrollerShape
+                        .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing)
+                    
+                    trrsShape
+                        .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
+                }
+                .extruded(height: dimensions.maxThickness)
+                .adding {
+                    Rectangle(x: microcontroller.mainBody.x, y: 1.5)
+                        .extruded(height: dimensions.maxThickness - microcontroller.mainBody.z)
+                        .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing, z: 0)
+                    
+                    Rectangle(x: microcontroller.usbWidth, y: microcontroller.usbOverhang)
+                        .extruded(height: dimensions.maxThickness - 0.4)
+                        .translated(x: dimensions.microcontrollerMinX + (microcontroller.mainBody.x - microcontroller.usbWidth) / 2, y: dimensions.microcontrollerMaxY + dimensions.outerSpacing - microcontroller.usbOverhang, z: 0)
+                    
+                    Rectangle(x: 1.5, y: trrs.mainBody.x / 2)
+                        .extruded(height: 1)
+                        .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY + (trrs.mainBody.x / 4), z: 0)
+                    
+                    Rectangle(x: trrs.openingOverhang, y: trrs.mainBody.x)
+                        .extruded(height: (trrs.mainBody.z - trrs.openingDiameter) / 2 + 1)
+                        .translated(x: dimensions.maxX - trrs.openingOverhang, y: dimensions.trrsMinY, z: 0)
+                }
+                .subtracting {
+                    columnBottomCutout
+                }
+        }
     }
     
     private var switchHoles: any Geometry2D {
