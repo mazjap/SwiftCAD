@@ -108,15 +108,25 @@ struct FerrisSweep: Shape3D {
     private let trrs: TrrsDimensions
     private let fingers: FingerOffsets
     private let dimensions: Dimensions
+    private let frame: Bool
     
-    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, fingerOffsets: FingerOffsets) {
+    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, fingerOffsets: FingerOffsets, frame: Bool) {
         self.microcontroller = microcontrollerDimensions
         self.trrs = trrsDimensions
         self.fingers = fingerOffsets
         self.dimensions = Dimensions(microcontroller: microcontrollerDimensions, trrs: trrsDimensions, fingers: fingerOffsets)
+        self.frame = frame
     }
     
     var body: any Geometry3D {
+        if frame {
+            frameGeometry
+        } else {
+            caseGeometry
+        }
+    }
+    
+    private var frameGeometry: any Geometry3D {
         Union {
             outline
                 .offset(amount: dimensions.outerSpacing, style: .round)
@@ -150,6 +160,15 @@ struct FerrisSweep: Shape3D {
                 .subtracting {
                     columnBottomCutout
                 }
+        }
+    }
+    
+    private var caseGeometry: any Geometry3D {
+        Union {
+            outline
+                .offset(amount: dimensions.outerSpacing, style: .round)
+                .offset(amount: dimensions.wallThickness, style: .round)
+                .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight)
         }
     }
     
