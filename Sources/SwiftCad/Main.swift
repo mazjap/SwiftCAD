@@ -70,6 +70,12 @@ class Main {
             await Model("modified_keycap") {
                 ModifiedKeycap()
             }
+            
+            for fireworkType in Firework.allCases {
+                await Model("firework_ornament_\(fireworkType.rawValue)") {
+                    FireworkOrnament(firework: fireworkType)
+                }
+            }
         }
         
         NSWorkspace.shared.open(URL(filePath: "./output"))

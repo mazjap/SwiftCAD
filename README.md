@@ -68,6 +68,12 @@ Based on the [Complete Cherry MX Stem Keycap Set](https://www.printables.com/mod
 
 ---
 
+### Firework Ornaments
+
+Based on the firework designs by [Sapann-Design / Magnific](https://www.magnific.com/free-vector/made-circles-with-lines-dots_958544.htm).
+
+---
+
 ## Requirements
 
 - macOS 14+

@@ -29,3 +29,8 @@ The files `Sources/SwiftCad/src/1U_blank.3mf` and the output file
 by the above license. They are licensed for non-commercial use only. See 
 https://www.printables.com/model/399607-complete-cherry-mx-stem-keycap-set-optimized-for-3
 for details.
+
+The svg files located `Sources/SwiftCad/src/fireworks` and the output files
+`firework_ornament_<INDEX>.3mf` are based on the work of Sapann-Design and are distributed
+by Magnific. Please see https://www.magnific.com/free-vector/made-circles-with-lines-dots_958544.htm
+for details.
