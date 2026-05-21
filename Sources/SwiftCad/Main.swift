@@ -43,19 +43,18 @@ class Main {
                 )
             }
             
-            await Model("hailey60_frame") {
-                Hailey60KeyboardBody(
+            await Model("hailey60_plate") {
+                Hailey60KeyboardPlate(
                     microcontrollerDimensions: .myRp2040,
-                    trrsDimensions: .mine,
-                    frame: true
+                    trrsDimensions: .mine
                 )
             }
             
             await Model("hailey60_case") {
-                Hailey60KeyboardBody(
+                Hailey60KeyboardCase(
                     microcontrollerDimensions: .myRp2040,
                     trrsDimensions: .mine,
-                    frame: false
+                    wedgeAngle: .degrees(10)
                 )
             }
             
