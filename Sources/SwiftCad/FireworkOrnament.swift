@@ -23,6 +23,7 @@ enum Firework: CaseIterable {
 
 struct FireworkOrnament: Shape3D {
     private let firework: Firework
+    private let outerPadding: Double = 2.5
     
     private var fireworkShape: any Geometry2D {
         Import(svg: firework.url)
@@ -34,6 +35,26 @@ struct FireworkOrnament: Shape3D {
     
     var body: any Geometry3D {
         fireworkShape
-            .extruded(height: 2)
+            .aligned(at: .center)
+            .measuringBounds { geometry, bounds in
+                let scaleX = 70 / bounds.size.x
+                let scaleY = 70 / bounds.size.y
+                
+                geometry.scaled(x: scaleX, y: scaleY)
+                    .measuringBounds { geometry, bounds in
+                        Stack(.y, spacing: -1.5) {
+                            Stack(.z, spacing: 0) {
+                                Circle.ellipse(size: bounds.size + outerPadding * 2)
+                                    .extruded(height: 3)
+                                
+                                geometry
+                                    .extruded(height: 1.5)
+                            }
+                            
+                            Ring(innerRadius: 1.5, thickness: 1.5)
+                                .extruded(height: 3)
+                        }
+                    }
+            }
     }
 }
