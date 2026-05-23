@@ -167,7 +167,11 @@ struct FerrisSweep: Shape3D {
         Union {
             outline
                 .offset(amount: dimensions.outerSpacing, style: .round)
-                .offset(amount: dimensions.wallThickness, style: .round)
+                .stroked(width: dimensions.wallThickness, alignment: .outside, style: .round)
+                .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight + dimensions.maxThickness)
+            
+            outline
+                .offset(amount: dimensions.outerSpacing, style: .round)
                 .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight)
         }
     }
@@ -250,6 +254,7 @@ struct FerrisSweep: Shape3D {
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .filled()
     }
+    
     private var columnBottomCutout: any Geometry3D {
         Union {
             Stack(.x, spacing: dimensions.spacingBetweenSwitchHole) {
