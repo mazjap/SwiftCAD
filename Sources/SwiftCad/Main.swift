@@ -25,21 +25,19 @@ class Main {
                 StreetSign(text: "Your Text")
             }
             
-            await Model("ferris_sweep_frame") {
-                FerrisSweep(
+            await Model("ferris_sweep_plate") {
+                FerrisSweepPlate(
                     microcontrollerDimensions: .myRp2040,
                     trrsDimensions: .mine,
-                    fingerOffsets: .mine,
-                    frame: true
+                    fingerOffsets: .mine
                 )
             }
             
             await Model("ferris_sweep_case") {
-                FerrisSweep(
+                FerrisSweepCase(
                     microcontrollerDimensions: .myRp2040,
                     trrsDimensions: .mine,
-                    fingerOffsets: .mine,
-                    frame: false
+                    fingerOffsets: .mine
                 )
             }
             

@@ -72,11 +72,7 @@ struct Hailey60Dimensions {
     }
 }
 
-fileprivate protocol Hailey60: Shape3D {
-    var dimensions: Hailey60Dimensions { get }
-    var microcontroller: MicrocontrollerDimensions { get }
-    var trrs: TrrsDimensions { get }
-}
+fileprivate protocol Hailey60: Keyboard<Hailey60Dimensions> {}
 
 extension Hailey60 {
     var latches: any Geometry3D {
@@ -188,9 +184,9 @@ extension Hailey60 {
 }
 
 struct Hailey60KeyboardCase: Hailey60 {
-    fileprivate let dimensions: Hailey60Dimensions
-    fileprivate let microcontroller: MicrocontrollerDimensions
-    fileprivate let trrs: TrrsDimensions
+    let dimensions: Hailey60Dimensions
+    let microcontroller: MicrocontrollerDimensions
+    let trrs: TrrsDimensions
     
     private let wedgeAngle: Angle?
     
@@ -280,9 +276,9 @@ struct Hailey60KeyboardCase: Hailey60 {
 }
 
 struct Hailey60KeyboardPlate: Hailey60 {
-    fileprivate let dimensions: Hailey60Dimensions
-    fileprivate let microcontroller: MicrocontrollerDimensions
-    fileprivate let trrs: TrrsDimensions
+    let dimensions: Hailey60Dimensions
+    let microcontroller: MicrocontrollerDimensions
+    let trrs: TrrsDimensions
     
     init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions) {
         self.dimensions = Hailey60Dimensions(microcontroller: microcontrollerDimensions, trrs: trrsDimensions)
