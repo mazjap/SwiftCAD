@@ -105,7 +105,58 @@ fileprivate protocol FerrisSweep: Keyboard<FerrisSweepDimensions> {
     var fingers: FingerOffsets { get }
 }
 
+extension Rectangle {
+    static func from(properties props: RectangleProperties) -> any Geometry2D {
+        Rectangle(props.size)
+            .translated(x: props.offset.x, y: props.offset.y)
+            .rotated(props.rotation, around: .center)
+    }
+}
+
+struct RectangleProperties { // Thank you precalc for teaching me trig haha 🙏
+    let offset: Vector2D
+    let rotation: Angle
+    let size: Double // I don't want to consider an oval right now 😅 So circles only for now haha
+    
+    private var hypotenuse: Double {
+        let radius = size / 2
+        return (radius * radius * 2).squareRoot()
+    }
+    
+    var topRight: Vector2D { // Q1, pre-rotation
+        Vector2D(offset.x + size / 2 + cos(.degrees(45) + rotation) * hypotenuse, offset.y + size / 2 + sin(.degrees(45) + rotation) * hypotenuse)
+    }
+    
+    var topLeft: Vector2D { // Q2, pre-rotation
+        Vector2D(offset.x + size / 2 + cos(.degrees(135) + rotation) * hypotenuse, offset.y + size / 2 + sin(.degrees(135) + rotation) * hypotenuse)
+    }
+    
+    var bottomRight: Vector2D { // Q4, pre-rotation
+        Vector2D(offset.x + size / 2 + cos(.degrees(-45) + rotation) * hypotenuse, offset.y + size / 2 + sin(.degrees(-45) + rotation) * hypotenuse)
+    }
+    
+    var bottomLeft: Vector2D {  // Q3, pre-rotation
+        Vector2D(offset.x + size / 2 + cos(.degrees(-135) + rotation) * hypotenuse, offset.y + size / 2 + sin(.degrees(-135) + rotation) * hypotenuse)
+    }
+}
+
 extension FerrisSweep {
+    fileprivate var firstThumbSwitchHole: RectangleProperties {
+        RectangleProperties(
+            offset: Vector2D(x: dimensions.thumbKeysXOffset, y: 0),
+            rotation: .degrees(-10),
+            size: dimensions.switchHoleSize
+        )
+    }
+    
+    fileprivate var secondThumbSwitchHole: RectangleProperties {
+        RectangleProperties(
+            offset: Vector2D(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5),
+            rotation: .degrees(-20),
+            size: dimensions.switchHoleSize
+        )
+    }
+    
     fileprivate var switchHoles: any Geometry2D {
         Union {
             columnSwitchsShapes
@@ -129,13 +180,9 @@ extension FerrisSweep {
     
     @GeometryBuilder2D
     fileprivate var thumbClusterSwitchShapes: any Geometry2D {
-        Rectangle(dimensions.switchHoleSize)
-            .translated(x: dimensions.thumbKeysXOffset)
-            .rotated(.degrees(-10), around: .center)
+        Rectangle.from(properties: firstThumbSwitchHole)
         
-        Rectangle(dimensions.switchHoleSize)
-            .translated(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5)
-            .rotated(.degrees(-20), around: .center)
+        Rectangle.from(properties: secondThumbSwitchHole)
     }
     
     fileprivate var microcontrollerShape: any Geometry2D {
@@ -156,10 +203,11 @@ extension FerrisSweep {
         .aligned(at: .bottom, .left)
     }
     
+    func isPointLeftOfLine(lineStart: Vector2D, lineEnd: Vector2D, point: Vector2D) -> Bool {
+        return (lineEnd.x - lineStart.x) * (point.y - lineStart.y) - (lineEnd.y - lineStart.y) * (point.x - lineStart.x) > 0
+    }
+    
     fileprivate var outline: any Geometry2D {
-        let radius = dimensions.switchHoleSize / 2
-        let hypotenuse = (radius * radius * 2).squareRoot()
-        
         return BezierPath2D(startPoint: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMaxY))
             .addingLine(to: Vector2D(dimensions.ringMinX, dimensions.ringMaxY))
@@ -174,12 +222,12 @@ extension FerrisSweep {
             // TRRS
             .addingLine(to: Vector2D(dimensions.trrsMaxX, dimensions.trrsMaxY))
             .addingLine(to: Vector2D(dimensions.trrsMaxX, dimensions.trrsMinY))
-            // Thank you precalc for teaching me trig haha 🙏
-            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(45 - 20)) * hypotenuse))
-            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-45 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-45 - 20)) * hypotenuse))
-            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize * 1.5 + dimensions.spacingBetweenSwitchHole + cos(.degrees(-135 - 20)) * hypotenuse, dimensions.switchHoleSize / 2 - 5 + sin(.degrees(-135 - 20)) * hypotenuse))
-            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize / 2 + cos(.degrees(-45 - 10)) * hypotenuse, dimensions.switchHoleSize / 2 + sin(.degrees(-45 - 10)) * hypotenuse))
-            .addingLine(to: Vector2D(dimensions.thumbKeysXOffset + dimensions.switchHoleSize / 2 + cos(.degrees(-135 - 10)) * hypotenuse, dimensions.switchHoleSize / 2 + sin(.degrees(-135 - 10)) * hypotenuse))
+            // Thumb Cluster
+            .addingLine(to: secondThumbSwitchHole.topRight)
+            .addingLine(to: secondThumbSwitchHole.bottomRight)
+            .addingLine(to: secondThumbSwitchHole.bottomLeft)
+            .addingLine(to: firstThumbSwitchHole.bottomRight)
+            .addingLine(to: firstThumbSwitchHole.bottomLeft)
             .addingLine(to: Vector2D(dimensions.pinkyMaxX, dimensions.pinkyMinY))
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .filled()
@@ -262,6 +310,17 @@ struct FerrisSweepPlate: FerrisSweep {
                 }
                 .subtracting {
                     columnBottomCutout
+                }
+                .subtracting {
+                    BezierPath(startPoint: Vector2D(dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, -dimensions.outerSpacing / 2))
+                        .addingLine(to: Vector2D(dimensions.switchHoleSize * 3.5 + dimensions.spacingBetweenSwitchHole * 3, -dimensions.outerSpacing / 2))
+                        .addingLine(to: Vector2D(dimensions.switchHoleSize * 3.5 + dimensions.spacingBetweenSwitchHole * 3, min(dimensions.ringMinY, dimensions.pointerMinY) - dimensions.spacingBetweenSwitchHole))
+                        .filled()
+                        .extruded(height: dimensions.maxThickness - dimensions.minThickness)
+                    
+//                    Rectangle(x: dimensions.switchHoleSize * 2.5 + dimensions.spacingBetweenSwitchHole * 2, y: min(dimensions.ringMinY, dimensions.pointerMinY) - dimensions.spacingBetweenSwitchHole - dimensions.outerSpacing)
+//                        .extruded(height: dimensions.maxThickness - dimensions.minThickness)
+//                        .translated(x: dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: 0)
                 }
         }
     }
