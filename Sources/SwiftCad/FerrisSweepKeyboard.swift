@@ -208,12 +208,17 @@ extension FerrisSweep {
     }
     
     fileprivate var outline: any Geometry2D {
-        return BezierPath2D(startPoint: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
+        var path = BezierPath2D(startPoint: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMaxY))
             .addingLine(to: Vector2D(dimensions.ringMinX, dimensions.ringMaxY))
             .addingLine(to: Vector2D(dimensions.middleMinX, dimensions.middleMaxY))
             .addingLine(to: Vector2D(dimensions.middleMaxX, dimensions.middleMaxY))
-//            .addingLine(to: Vector2D(dimensions.pointerMaxX, dimensions.pointerMaxY)) // I think it looks a little better without the pointer finger vertex 🤷‍♂️
+        
+        if isPointLeftOfLine(lineStart: Vector2D(x: dimensions.middleMaxX, y: dimensions.middleMaxY), lineEnd: Vector2D(x: dimensions.otherMaxX, y: dimensions.otherMaxY), point: Vector2D(x: dimensions.pointerMaxX, y: dimensions.pointerMaxY)) {
+            path = path.addingLine(to: Vector2D(dimensions.pointerMaxX, dimensions.pointerMaxY))
+        }
+        
+        return path
             .addingLine(to: Vector2D(dimensions.otherMaxX, dimensions.otherMaxY))
             // Microcontroller
             .addingLine(to: Vector2D(dimensions.microcontrollerMinX, dimensions.microcontrollerMaxY))
