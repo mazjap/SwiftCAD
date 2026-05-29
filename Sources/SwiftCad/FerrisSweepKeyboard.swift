@@ -317,17 +317,22 @@ struct FerrisSweepPlate: FerrisSweep {
                     columnBottomCutout
                 }
                 .subtracting {
-                    BezierPath(startPoint: Vector2D(dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, -dimensions.outerSpacing / 2))
-                        .addingLine(to: Vector2D(dimensions.switchHoleSize * 3.5 + dimensions.spacingBetweenSwitchHole * 3, -dimensions.outerSpacing / 2))
-                        .addingLine(to: Vector2D(dimensions.switchHoleSize * 3.5 + dimensions.spacingBetweenSwitchHole * 3, min(dimensions.ringMinY, dimensions.pointerMinY) - dimensions.spacingBetweenSwitchHole))
-                        .filled()
+                    deadSpaceCutoutUnderFingers
                         .extruded(height: dimensions.maxThickness - dimensions.minThickness)
-                    
-//                    Rectangle(x: dimensions.switchHoleSize * 2.5 + dimensions.spacingBetweenSwitchHole * 2, y: min(dimensions.ringMinY, dimensions.pointerMinY) - dimensions.spacingBetweenSwitchHole - dimensions.outerSpacing)
-//                        .extruded(height: dimensions.maxThickness - dimensions.minThickness)
-//                        .translated(x: dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: 0)
                 }
         }
+    }
+    
+    private var deadSpaceCutoutUnderFingers: any Geometry2D {
+        BezierPath(startPoint: Vector2D(dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, -dimensions.outerSpacing / 2))
+            .addingLine(to: Vector2D(firstThumbSwitchHole.bottomLeft.x - dimensions.spacingBetweenSwitchHole, firstThumbSwitchHole.bottomLeft.y - dimensions.outerSpacing / 2))
+            .addingLine(to: Vector2D(firstThumbSwitchHole.topLeft.x - dimensions.spacingBetweenSwitchHole, dimensions.pointerMinY - dimensions.spacingBetweenSwitchHole))
+            .addingLine(to: Vector2D(dimensions.middleMaxX, dimensions.pointerMinY - dimensions.spacingBetweenSwitchHole))
+            .addingLine(to: Vector2D(dimensions.middleMaxX, dimensions.middleMinY - dimensions.spacingBetweenSwitchHole))
+            .addingLine(to: Vector2D(dimensions.middleMinX, dimensions.middleMinY - dimensions.spacingBetweenSwitchHole))
+            .addingLine(to: Vector2D(dimensions.middleMinX, dimensions.ringMinY - dimensions.spacingBetweenSwitchHole))
+            .addingLine(to: Vector2D(dimensions.ringMinX, dimensions.ringMinY - dimensions.spacingBetweenSwitchHole))
+            .filled()
     }
 }
 
