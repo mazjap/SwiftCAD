@@ -135,7 +135,7 @@ struct RectangleProperties { // Thank you precalc for teaching me trig haha 🙏
         Vector2D(offset.x + size / 2 + cos(.degrees(-45) + rotation) * hypotenuse, offset.y + size / 2 + sin(.degrees(-45) + rotation) * hypotenuse)
     }
     
-    var bottomLeft: Vector2D {  // Q3, pre-rotation
+    var bottomLeft: Vector2D { // Q3, pre-rotation
         Vector2D(offset.x + size / 2 + cos(.degrees(-135) + rotation) * hypotenuse, offset.y + size / 2 + sin(.degrees(-135) + rotation) * hypotenuse)
     }
 }
@@ -233,6 +233,7 @@ extension FerrisSweep {
             .addingLine(to: secondThumbSwitchHole.bottomLeft)
             .addingLine(to: firstThumbSwitchHole.bottomRight)
             .addingLine(to: firstThumbSwitchHole.bottomLeft)
+            // Back to start
             .addingLine(to: Vector2D(dimensions.pinkyMaxX, dimensions.pinkyMinY))
             .addingLine(to: Vector2D(dimensions.pinkyMinX, dimensions.pinkyMinY))
             .filled()
@@ -267,7 +268,6 @@ extension FerrisSweep {
         }
     }
 }
-
 
 struct FerrisSweepPlate: FerrisSweep {
     let microcontroller: MicrocontrollerDimensions
@@ -350,15 +350,60 @@ struct FerrisSweepCase: FerrisSweep {
     }
     
     var body: any Geometry3D {
+        let border = outline.offset(amount: dimensions.outerSpacing, style: .round)
         Union {
-            outline
-                .offset(amount: dimensions.outerSpacing, style: .round)
-                .stroked(width: dimensions.wallThickness, alignment: .outside, style: .round)
-                .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight + dimensions.maxThickness)
-            
-            outline
-                .offset(amount: dimensions.outerSpacing, style: .round)
+            // Bottom plate
+            border.fillingHoles()
                 .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight)
+                .subtracting {
+                    // Where the keyboard plate rests
+                    border.fillingHoles()
+                        .offset(amount: -2, style: .square)
+                        .extruded(height: dimensions.bottomSupportHeight)
+                        .translated(z: dimensions.minThickness)
+                }
+            
+            // Key supports
+            Stack(.x, spacing: dimensions.switchHoleSize) {
+                for columnOffset in dimensions.columnVerticalOffsets.dropLast() {
+                    Stack(.y, spacing: dimensions.switchHoleSize) {
+                        for _ in 1..<3 {
+                            Rectangle(x: dimensions.spacingBetweenSwitchHole, y: dimensions.spacingBetweenSwitchHole)
+                        }
+                    }
+                    .translated(y: columnOffset)
+                }
+            }
+            .extruded(height: dimensions.bottomSupportHeight + dimensions.minThickness)
+            .translated(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize)
+            
+            // Case wall
+            let filletRadius = dimensions.wallThickness / 2
+            
+            border
+                .stroked(width: dimensions.wallThickness, alignment: .outside, style: .round)
+                .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight + dimensions.maxThickness, topEdge: .fillet(radius: filletRadius))
+            
+            border
+                .stroked(width: filletRadius, alignment: .outside, style: .round)
+                .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight + dimensions.maxThickness)
+        }
+        .subtracting {
+            let microcontrollerWallHole: Double = 13
+            
+            Rectangle(
+                x: microcontrollerWallHole,
+                y: dimensions.wallThickness
+            )
+            .extruded(height: dimensions.maxThickness)
+            .translated(x: dimensions.microcontrollerMinX + (microcontroller.mainBody.x - microcontrollerWallHole) / 2, y: dimensions.microcontrollerMaxY + dimensions.outerSpacing, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+        }
+        .subtracting {
+            let trrsWallHole: Double = 9
+            
+            Rectangle(x: dimensions.wallThickness, y: trrsWallHole)
+                .extruded(height: dimensions.maxThickness + dimensions.bottomSupportHeight - dimensions.minThickness)
+                .translated(x: dimensions.maxX, y: dimensions.trrsMinY - (trrsWallHole - trrs.mainBody.x) / 2, z: dimensions.minThickness + dimensions.bottomSupportHeight)
         }
     }
 }
