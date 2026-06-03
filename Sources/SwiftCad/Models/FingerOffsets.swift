@@ -26,7 +26,7 @@ struct FingerOffsets {
         self.pointer = pointer
     }
     
-    static let mine = FingerOffsets(ring: 20.5, middle: 29.5, pointer: 20.5)
+    static let mine = FingerOffsets(ring: 15.5, middle: 24.5, pointer: 15.5)
 }
 
 enum NonThumbFinger: CaseIterable {

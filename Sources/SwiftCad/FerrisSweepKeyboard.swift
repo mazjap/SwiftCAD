@@ -85,7 +85,7 @@ struct FerrisSweepDimensions {
         self.otherMaxY = otherMinY + colHeight
         
         self.columnVerticalOffsets = fingers.orderedOffsets + [otherMinY]
-        self.thumbKeysXOffset = 3.6 * (switchHoleSize + spacingBetweenSwitchHole)
+        self.thumbKeysXOffset = 3.8 * (switchHoleSize + spacingBetweenSwitchHole)
         
         self.microcontrollerMinX = otherMaxX + spacingBetweenSwitchHole
         self.microcontrollerMaxX = microcontrollerMinX + microcontroller.mainBody.x
@@ -143,7 +143,7 @@ struct RectangleProperties { // Thank you precalc for teaching me trig haha 🙏
 extension FerrisSweep {
     fileprivate var firstThumbSwitchHole: RectangleProperties {
         RectangleProperties(
-            offset: Vector2D(x: dimensions.thumbKeysXOffset, y: 0),
+            offset: Vector2D(x: dimensions.thumbKeysXOffset, y: -5),
             rotation: .degrees(-10),
             size: dimensions.switchHoleSize
         )
@@ -151,7 +151,7 @@ extension FerrisSweep {
     
     fileprivate var secondThumbSwitchHole: RectangleProperties {
         RectangleProperties(
-            offset: Vector2D(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5),
+            offset: Vector2D(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -10),
             rotation: .degrees(-20),
             size: dimensions.switchHoleSize
         )
@@ -249,12 +249,12 @@ extension FerrisSweep {
             }
             
             Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize + dimensions.outerSpacing)
-                .translated(x: dimensions.thumbKeysXOffset, y: -dimensions.outerSpacing / 2)
-                .rotated(.degrees(-10), around: .center)
+                .translated(x: firstThumbSwitchHole.offset.x, y: firstThumbSwitchHole.offset.y - dimensions.outerSpacing / 2)
+                .rotated(firstThumbSwitchHole.rotation, around: .center)
             
             Rectangle(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize + dimensions.outerSpacing)
-                .translated(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -5 - dimensions.outerSpacing / 2)
-                .rotated(.degrees(-20), around: .center)
+                .translated(x: secondThumbSwitchHole.offset.x, y: secondThumbSwitchHole.offset.y - dimensions.outerSpacing / 2)
+                .rotated(secondThumbSwitchHole.rotation, around: .center)
         }
         .extruded(height: dimensions.maxThickness - dimensions.minThickness)
     }
