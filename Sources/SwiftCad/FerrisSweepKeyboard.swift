@@ -143,7 +143,7 @@ struct RectangleProperties { // Thank you precalc for teaching me trig haha 🙏
 extension FerrisSweep {
     fileprivate var firstThumbSwitchHole: RectangleProperties {
         RectangleProperties(
-            offset: Vector2D(x: dimensions.thumbKeysXOffset, y: -5),
+            offset: Vector2D(x: dimensions.thumbKeysXOffset, y: -6),
             rotation: .degrees(-10),
             size: dimensions.switchHoleSize
         )
@@ -151,7 +151,7 @@ extension FerrisSweep {
     
     fileprivate var secondThumbSwitchHole: RectangleProperties {
         RectangleProperties(
-            offset: Vector2D(x: dimensions.thumbKeysXOffset + dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole, y: -10),
+            offset: Vector2D(x: dimensions.thumbKeysXOffset + (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) * 1.05, y: -12),
             rotation: .degrees(-20),
             size: dimensions.switchHoleSize
         )
@@ -358,7 +358,7 @@ struct FerrisSweepCase: FerrisSweep {
                 .subtracting {
                     // Where the keyboard plate rests
                     border.fillingHoles()
-                        .offset(amount: -2, style: .square)
+                        .offset(amount: -1.5, style: .square)
                         .extruded(height: dimensions.bottomSupportHeight)
                         .translated(z: dimensions.minThickness)
                 }
