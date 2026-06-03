@@ -362,7 +362,3 @@ struct Hailey60KeyboardPlate: Hailey60 {
             }
     }
 }
-
-enum Edge {
-    case top, right, bottom, left
-}

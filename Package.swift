@@ -11,7 +11,7 @@ let package = Package(
         .executableTarget(
             name: "SwiftCad",
             dependencies: ["Cadova"],
-            resources: [.copy("./src/")],
+            resources: [.copy("./Helpers/src/")],
             swiftSettings: [.interoperabilityMode(.Cxx)]
         )
     ]
