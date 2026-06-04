@@ -30,12 +30,12 @@ enum FerrisSweepColumn: CaseIterable {
     static let allCases: [FerrisSweepColumn] = NonThumbFinger.allCases.reversed().map(FerrisSweepColumn.finger) + [.other]
 }
 
-struct FerrisSweepDimensions {
+struct FerrisSweepDimensions: KeyboardDimensions {
     let switchHoleSize: Double = 14.1
     let spacingBetweenSwitchHole: Double = 5
     let minThickness: Double = 1.6
     let maxThickness: Double = 5.5
-    let bottomSupportHeight: Double = 2
+    let bottomSupportHeight: Double = 3.5
     let wallThickness: Double = 3
     
     let outerSpacing: Double
@@ -141,6 +141,27 @@ struct RectangleProperties { // Thank you precalc for teaching me trig haha 🙏
 }
 
 extension FerrisSweep {
+    var latches: any Geometry3D {
+        Union {
+            let bottomMidPoint = Vector2D(dimensions.switchHoleSize, -dimensions.outerSpacing)
+                .point(alongLineTo: Vector2D(firstThumbSwitchHole.bottomLeft.x, firstThumbSwitchHole.bottomLeft.y - dimensions.outerSpacing), at: 0.5)
+            
+            latchAttachedTo(edge: .top)
+                .rotated(.degrees(-4.5), around: .z) // TODO: - Fix hardcoded angle
+                .translated(x: bottomMidPoint.x, y: bottomMidPoint.y)
+            
+            latchAttachedTo(edge: .left)
+                .translated(x: -dimensions.outerSpacing, y: dimensions.pinkyMaxY / 2)
+            
+            latchAttachedTo(edge: .right)
+                .translated(x: dimensions.maxX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing)
+            
+            latchAttachedTo(edge: .bottom)
+                .translated(x: dimensions.switchHoleSize * 2.5 + dimensions.spacingBetweenSwitchHole * 2, y: dimensions.middleMaxY + dimensions.outerSpacing)
+        }
+        .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
+    }
+    
     fileprivate var firstThumbSwitchHole: RectangleProperties {
         RectangleProperties(
             offset: Vector2D(x: dimensions.thumbKeysXOffset, y: -6),
@@ -283,44 +304,46 @@ struct FerrisSweepPlate: FerrisSweep {
     }
     
     var body: any Geometry3D {
-        Union {
-            outline
-                .offset(amount: dimensions.outerSpacing, style: .round)
-                .subtracting {
-                    switchHoles
-                    
-                    microcontrollerShape
-                        .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing)
-                    
-                    trrsShape
-                        .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
-                }
-                .extruded(height: dimensions.maxThickness)
-                .adding {
-                    Rectangle(x: microcontroller.mainBody.x, y: 1.5)
-                        .extruded(height: dimensions.maxThickness - microcontroller.mainBody.z)
-                        .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing, z: 0)
-                    
-                    Rectangle(x: microcontroller.usbWidth, y: microcontroller.usbOverhang)
-                        .extruded(height: dimensions.maxThickness - 0.4)
-                        .translated(x: dimensions.microcontrollerMinX + (microcontroller.mainBody.x - microcontroller.usbWidth) / 2, y: dimensions.microcontrollerMaxY + dimensions.outerSpacing - microcontroller.usbOverhang, z: 0)
-                    
-                    Rectangle(x: 1.5, y: trrs.mainBody.x / 2)
-                        .extruded(height: 1)
-                        .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY + (trrs.mainBody.x / 4), z: 0)
-                    
-                    Rectangle(x: trrs.openingOverhang, y: trrs.mainBody.x)
-                        .extruded(height: (trrs.mainBody.z - trrs.openingDiameter) / 2 + 1)
-                        .translated(x: dimensions.maxX - trrs.openingOverhang, y: dimensions.trrsMinY, z: 0)
-                }
-                .subtracting {
-                    columnBottomCutout
-                }
-                .subtracting {
-                    deadSpaceCutoutUnderFingers
-                        .extruded(height: dimensions.maxThickness - dimensions.minThickness)
-                }
-        }
+        outline
+            .offset(amount: dimensions.outerSpacing, style: .round)
+            .subtracting {
+                switchHoles
+                
+                microcontrollerShape
+                    .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing)
+                
+                trrsShape
+                    .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY)
+            }
+            .extruded(height: dimensions.maxThickness)
+            .adding {
+                Rectangle(x: microcontroller.mainBody.x, y: 1.5)
+                    .extruded(height: dimensions.maxThickness - microcontroller.mainBody.z)
+                    .translated(x: dimensions.microcontrollerMinX, y: dimensions.microcontrollerMinY + dimensions.outerSpacing, z: 0)
+                
+                Rectangle(x: microcontroller.usbWidth, y: microcontroller.usbOverhang)
+                    .extruded(height: dimensions.maxThickness - 0.4)
+                    .translated(x: dimensions.microcontrollerMinX + (microcontroller.mainBody.x - microcontroller.usbWidth) / 2, y: dimensions.microcontrollerMaxY + dimensions.outerSpacing - microcontroller.usbOverhang, z: 0)
+                
+                Rectangle(x: 1.5, y: trrs.mainBody.x / 2)
+                    .extruded(height: 1)
+                    .translated(x: dimensions.trrsMinX + dimensions.outerSpacing, y: dimensions.trrsMinY + (trrs.mainBody.x / 4), z: 0)
+                
+                Rectangle(x: trrs.openingOverhang, y: trrs.mainBody.x)
+                    .extruded(height: (trrs.mainBody.z - trrs.openingDiameter) / 2 + 1)
+                    .translated(x: dimensions.maxX - trrs.openingOverhang, y: dimensions.trrsMinY, z: 0)
+            }
+            .subtracting {
+                columnBottomCutout
+            }
+            .subtracting {
+                deadSpaceCutoutUnderFingers
+                    .extruded(height: dimensions.maxThickness - dimensions.minThickness)
+            }
+            .translated(z: dimensions.bottomSupportHeight + dimensions.minThickness)
+            .adding {
+                latches
+            }
     }
     
     private var deadSpaceCutoutUnderFingers: any Geometry2D {
@@ -404,6 +427,9 @@ struct FerrisSweepCase: FerrisSweep {
             Rectangle(x: dimensions.wallThickness, y: trrsWallHole)
                 .extruded(height: dimensions.maxThickness + dimensions.bottomSupportHeight - dimensions.minThickness)
                 .translated(x: dimensions.maxX, y: dimensions.trrsMinY - (trrsWallHole - trrs.mainBody.x) / 2, z: dimensions.minThickness + dimensions.bottomSupportHeight)
+        }
+        .subtracting {
+            latches
         }
     }
 }
