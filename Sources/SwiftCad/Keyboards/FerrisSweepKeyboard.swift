@@ -386,19 +386,19 @@ struct FerrisSweepCase: FerrisSweep {
                         .translated(z: dimensions.minThickness)
                 }
             
-            // Key supports
-            Stack(.x, spacing: dimensions.switchHoleSize) {
-                for columnOffset in dimensions.columnVerticalOffsets.dropLast() {
-                    Stack(.y, spacing: dimensions.switchHoleSize) {
-                        for _ in 1..<3 {
-                            Rectangle(x: dimensions.spacingBetweenSwitchHole, y: dimensions.spacingBetweenSwitchHole)
-                        }
-                    }
-                    .translated(y: columnOffset)
-                }
-            }
-            .extruded(height: dimensions.bottomSupportHeight + dimensions.minThickness)
-            .translated(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize)
+//            // Key supports
+//            Stack(.x, spacing: dimensions.switchHoleSize) {
+//                for columnOffset in dimensions.columnVerticalOffsets.dropLast() {
+//                    Stack(.y, spacing: dimensions.switchHoleSize) {
+//                        for _ in 1..<3 {
+//                            Rectangle(x: dimensions.spacingBetweenSwitchHole, y: dimensions.spacingBetweenSwitchHole)
+//                        }
+//                    }
+//                    .translated(y: columnOffset)
+//                }
+//            }
+//            .extruded(height: dimensions.bottomSupportHeight + dimensions.minThickness)
+//            .translated(x: dimensions.switchHoleSize, y: dimensions.switchHoleSize)
             
             // Case wall
             let filletRadius = dimensions.wallThickness / 2
