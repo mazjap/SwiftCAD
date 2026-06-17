@@ -199,7 +199,7 @@ struct Hailey60KeyboardCase: Hailey60 {
                 .extruded(height: dimensions.minThickness + dimensions.bottomSupportHeight)
                 .subtracting {
                     bounds.fillingHoles()
-                        .offset(amount: -2.5, style: .square)
+                        .offset(amount: -1.5, style: .square)
                         .extruded(height: dimensions.bottomSupportHeight)
                         .translated(z: dimensions.minThickness)
                 }
