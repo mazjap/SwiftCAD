@@ -204,19 +204,19 @@ struct Hailey60KeyboardCase: Hailey60 {
                         .translated(z: dimensions.minThickness)
                 }
             
-            Union {
-                for y in 1..<5 {
-                    for x in 1..<6 {
-                        Rectangle(dimensions.spacingBetweenSwitchHole)
-                            .translated(
-                                x: Double(x) * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - dimensions.spacingBetweenSwitchHole,
-                                y: Double(y) * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - dimensions.spacingBetweenSwitchHole
-                            )
-                    }
-                }
-            }
-            .extruded(height: dimensions.bottomSupportHeight)
-            .translated(z: dimensions.minThickness)
+//            Union {
+//                for y in 1..<5 {
+//                    for x in 1..<6 {
+//                        Rectangle(dimensions.spacingBetweenSwitchHole)
+//                            .translated(
+//                                x: Double(x) * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - dimensions.spacingBetweenSwitchHole,
+//                                y: Double(y) * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - dimensions.spacingBetweenSwitchHole
+//                            )
+//                    }
+//                }
+//            }
+//            .extruded(height: dimensions.bottomSupportHeight)
+//            .translated(z: dimensions.minThickness)
             
             let filletRadius = dimensions.wallThickness / 2
             
