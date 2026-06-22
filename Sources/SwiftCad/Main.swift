@@ -73,6 +73,10 @@ class Main {
                     FireworkOrnament(firework: fireworkType)
                 }
             }
+            
+            await Model("moon_surface") {
+                Moon()
+            }
         }
         
         NSWorkspace.shared.open(URL(filePath: "./output"))
