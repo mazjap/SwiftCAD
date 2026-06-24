@@ -1,68 +1,92 @@
 import Cadova
+import CoreLocation
 
-struct Moon: Shape3D {
-    var body: any Cadova.Geometry3D {
-        let cols = 3, rows = 3
+struct EdgeKey: Hashable {
+    let a: Int, b: Int
+    init(_ x: Int, _ y: Int) { a = min(x, y); b = max(x, y) }
+}
 
-        let topVertex: (Int, Int) -> Vector3D = { i, j in
-            (i == 1 && j == 1) ? Vector3D(Double(i), Double(j), 20) : Vector3D(Double(i), Double(j), 0.1)
-        }
-        let bottomVertex: (Int, Int) -> Vector3D = { i, j in
-            Vector3D(Double(i), Double(j), 0)
-        }
+struct Icosphere {
+    private(set) var vertices: [Vector3D]
+    private(set) var faces: [(Int, Int, Int)]
 
-        let topFaces = heightfieldFaces(cols: cols, rows: rows, vertex: topVertex)
-        let bottomFaces = heightfieldFaces(cols: cols, rows: rows, vertex: bottomVertex)
-            .map { Array($0.reversed()) }
-        let sideFaces = wallFaces(cols: cols, rows: rows, top: topVertex, bottom: bottomVertex)
+    init(radius: Double, subdivisions: Int) {
+        let t = (1 + 5.0.squareRoot()) / 2
+        var verts: [Vector3D] = [
+            Vector3D(-1, t, 0), Vector3D(1, t, 0), Vector3D(-1, -t, 0), Vector3D(1, -t, 0),
+            Vector3D(0, -1, t), Vector3D(0, 1, t), Vector3D(0, -1, -t), Vector3D(0, 1, -t),
+            Vector3D(t, 0, -1), Vector3D(t, 0, 1), Vector3D(-t, 0, -1), Vector3D(-t, 0, 1)
+        ].map { $0.normalized * radius }
 
-        let mesh = Mesh(faces: topFaces + bottomFaces + sideFaces, name: "Test")
-        print(mesh.validate())
-        return mesh
-        .wrappedAroundSphere(radius: 100)
-    }
+        var idxFaces: [(Int, Int, Int)] = [
+            (0,11,5),(0,5,1),(0,1,7),(0,7,10),(0,10,11),
+            (1,5,9),(5,11,4),(11,10,2),(10,7,6),(7,1,8),
+            (3,9,4),(3,4,2),(3,2,6),(3,6,8),(3,8,9),
+            (4,9,5),(2,4,11),(6,2,10),(8,6,7),(9,8,1)
+        ]
 
-    private func heightfieldFaces(
-        cols: Int, rows: Int,
-        vertex: (Int, Int) -> Vector3D
-    ) -> [[Vector3D]] {
-        var faces: [[Vector3D]] = []
-        for j in 0..<(rows - 1) {
-            for i in 0..<(cols - 1) {
-                let a = vertex(i, j)
-                let b = vertex(i + 1, j)
-                let c = vertex(i + 1, j + 1)
-                let d = vertex(i, j + 1)
-                faces.append([a, b, c])
-                faces.append([a, c, d])
+        for _ in 0..<subdivisions {
+            var edgeCache: [EdgeKey: Int] = [:]
+            func midpoint(_ a: Int, _ b: Int) -> Int {
+                let key = EdgeKey(a, b)
+                if let cached = edgeCache[key] { return cached }
+                let mid = ((verts[a] + verts[b]) / 2).normalized * radius
+                verts.append(mid)
+                let index = verts.count - 1
+                edgeCache[key] = index
+                return index
+            }
+
+            idxFaces = idxFaces.flatMap { (a, b, c) -> [(Int, Int, Int)] in
+                let ab = midpoint(a, b), bc = midpoint(b, c), ca = midpoint(c, a)
+                return [(a, ab, ca), (b, bc, ab), (c, ca, bc), (ab, bc, ca)]
             }
         }
-        return faces
-    }
 
-    private func boundaryLoop(cols: Int, rows: Int) -> [(Int, Int)] {
-        var points: [(Int, Int)] = []
-        for i in 0..<cols { points.append((i, 0)) }
-        for j in 1..<rows { points.append((cols - 1, j)) }
-        for i in stride(from: cols - 2, through: 0, by: -1) { points.append((i, rows - 1)) }
-        for j in stride(from: rows - 2, through: 1, by: -1) { points.append((0, j)) }
-        return points
+        vertices = verts
+        faces = idxFaces
     }
+}
 
-    private func wallFaces(
-        cols: Int, rows: Int,
-        top: (Int, Int) -> Vector3D, bottom: (Int, Int) -> Vector3D
-    ) -> [[Vector3D]] {
-        let loop = boundaryLoop(cols: cols, rows: rows)
-        var faces: [[Vector3D]] = []
-        for k in 0..<loop.count {
-            let p0 = loop[k]
-            let p1 = loop[(k + 1) % loop.count]
-            let (t0, t1) = (top(p0.0, p0.1), top(p1.0, p1.1))
-            let (b0, b1) = (bottom(p0.0, p0.1), bottom(p1.0, p1.1))
-            faces.append([b1, t1, t0])
-            faces.append([b0, b1, t0])
+struct Moon: Shape3D {
+    let baseRadius: Double
+    let subdivisions: Int
+    let exaggeration: Double
+    
+    init(baseRadius: Double = 100, subdivisions: Int = 6, exaggeration: Double = 8) {
+        self.baseRadius = baseRadius
+        self.subdivisions = subdivisions
+        self.exaggeration = exaggeration
+    }
+    
+    var body: any Cadova.Geometry3D {
+        let icosphere = Icosphere(radius: baseRadius, subdivisions: subdivisions)
+
+        let displaced = icosphere.vertices.map { vector in
+            let direction = vector.normalized
+            let coordinate = latLon(from: direction)
+            let h = sampleHeight(at: coordinate)
+            return direction * (baseRadius + h * exaggeration)
         }
-        return faces
+
+        let meshFaces = icosphere.faces.map { (a, b, c) in
+            [displaced[a], displaced[b], displaced[c]]
+        }
+
+        Mesh(
+            faces: meshFaces,
+            name: "MoonIcosphere",
+            cacheParameters: subdivisions, baseRadius, exaggeration
+        )
+    }
+    
+    func latLon(from direction: Vector3D) -> CLLocationCoordinate2D {
+        let lat = Cadova.asin(min(max(direction.z, -1), 1))
+        let lon = Cadova.atan2(direction.y, direction.x)
+        return CLLocationCoordinate2D(latitude: lat.degrees, longitude: lon.degrees)
+    }
+    
+    private func sampleHeight(at coordinate: CLLocationCoordinate2D) -> Double {
+        return 0 // TODO: - Use displacement image to return elevation at coordinate
     }
 }
