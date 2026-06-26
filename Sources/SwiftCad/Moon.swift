@@ -10,7 +10,7 @@ struct Icosphere {
     private(set) var vertices: [Vector3D]
     private(set) var faces: [(Int, Int, Int)]
 
-    init(radius: Double, subdivisions: Int) {
+    init(radius: Double, subdivisions: Int, normalize: Bool) {
         let t = (1 + 5.0.squareRoot()) / 2
         var verts: [Vector3D] = [
             Vector3D(-1, t, 0), Vector3D(1, t, 0), Vector3D(-1, -t, 0), Vector3D(1, -t, 0),
@@ -30,7 +30,8 @@ struct Icosphere {
             func midpoint(_ a: Int, _ b: Int) -> Int {
                 let key = EdgeKey(a, b)
                 if let cached = edgeCache[key] { return cached }
-                let mid = ((verts[a] + verts[b]) / 2).normalized * radius
+                let unnormalizedMid = (verts[a] + verts[b]) / 2
+                let mid = (normalize ? unnormalizedMid.normalized : unnormalizedMid) * radius
                 verts.append(mid)
                 let index = verts.count - 1
                 edgeCache[key] = index
@@ -52,6 +53,7 @@ struct Moon: Shape3D {
     let baseRadius: Double
     let subdivisions: Int
     let exaggeration: Double
+    let superCoolVersion: Bool = false
     
     init(baseRadius: Double = 100, subdivisions: Int = 6, exaggeration: Double = 8) {
         self.baseRadius = baseRadius
@@ -60,12 +62,12 @@ struct Moon: Shape3D {
     }
     
     var body: any Cadova.Geometry3D {
-        let icosphere = Icosphere(radius: baseRadius, subdivisions: subdivisions)
+        let icosphere = Icosphere(radius: baseRadius, subdivisions: subdivisions, normalize: !superCoolVersion)
 
         let displaced = icosphere.vertices.map { vector in
             let direction = vector.normalized
             let coordinate = latLon(from: direction)
-            let h = sampleHeight(at: coordinate)
+            let h = superCoolVersion ? 0 : sampleHeight(at: coordinate)
             return direction * (baseRadius + h * exaggeration)
         }
 
