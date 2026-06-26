@@ -1,5 +1,4 @@
 import Cadova
-import CoreLocation
 
 struct EdgeKey: Hashable {
     let a: Int, b: Int
@@ -82,13 +81,13 @@ struct Moon: Shape3D {
         )
     }
     
-    func latLon(from direction: Vector3D) -> CLLocationCoordinate2D {
+    func latLon(from direction: Vector3D) -> (lat: Angle, lon: Angle) {
         let lat = Cadova.asin(min(max(direction.z, -1), 1))
         let lon = Cadova.atan2(direction.y, direction.x)
-        return CLLocationCoordinate2D(latitude: lat.degrees, longitude: lon.degrees)
+        return (lat, lon)
     }
     
-    private func sampleHeight(at coordinate: CLLocationCoordinate2D) -> Double {
+    private func sampleHeight(at coordinate: (lat: Angle, lon: Angle)) -> Double {
         return 0 // TODO: - Use displacement image to return elevation at coordinate
     }
 }
