@@ -1,4 +1,5 @@
 import Cadova
+import Foundation
 
 struct EdgeKey: Hashable {
     let a: Int, b: Int
@@ -49,12 +50,21 @@ struct Icosphere {
 }
 
 struct Moon: Shape3D {
+    private static let moonElevationArray = {
+        let data = try! Data(contentsOf: URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/moon_elevations.bin"))
+        let floats = data.withUnsafeBytes { $0.bindMemory(to: Float32.self) }
+        return Array(floats)
+    }()
+    private static let imageWidth = 2880
+    private static let imageHeight = 1440
+    private static let moonRadiusMeters = 1_737_000.0
+
     let baseRadius: Double
     let subdivisions: Int
     let exaggeration: Double
     let superCoolVersion: Bool = false
     
-    init(baseRadius: Double = 100, subdivisions: Int = 6, exaggeration: Double = 8) {
+    init(baseRadius: Double = 100, subdivisions: Int = 8, exaggeration: Double = 3) {
         self.baseRadius = baseRadius
         self.subdivisions = subdivisions
         self.exaggeration = exaggeration
@@ -62,18 +72,20 @@ struct Moon: Shape3D {
     
     var body: any Cadova.Geometry3D {
         let icosphere = Icosphere(radius: baseRadius, subdivisions: subdivisions, normalize: !superCoolVersion)
-
+        
         let displaced = icosphere.vertices.map { vector in
             let direction = vector.normalized
             let coordinate = latLon(from: direction)
             let h = superCoolVersion ? 0 : sampleHeight(at: coordinate)
-            return direction * (baseRadius + h * exaggeration)
+            let normalizedHeight = h / Self.moonRadiusMeters
+            let scaledHeight = normalizedHeight * baseRadius
+            return direction * (baseRadius + scaledHeight * exaggeration)
         }
-
+        
         let meshFaces = icosphere.faces.map { (a, b, c) in
             [displaced[a], displaced[b], displaced[c]]
         }
-
+        
         Mesh(
             faces: meshFaces,
             name: "MoonIcosphere",
@@ -88,6 +100,38 @@ struct Moon: Shape3D {
     }
     
     private func sampleHeight(at coordinate: (lat: Angle, lon: Angle)) -> Double {
-        return 0 // TODO: - Use displacement image to return elevation at coordinate
+        let u = (coordinate.lon.radians + .pi) / (2 * .pi) // 0...1
+        let v = (.pi / 2 - coordinate.lat.radians) / .pi // 0...1, row 0 = north pole
+
+        let x = u * Double(Self.imageWidth)
+        let y = v * Double(Self.imageHeight)
+
+        return bilinearSample(x: x, y: y)
+    }
+    
+    private func bilinearSample(x: Double, y: Double) -> Double {
+        let x0 = Int(x.rounded(.down))
+        let y0 = max(0, min(Self.imageHeight - 1, Int(y.rounded(.down))))
+        let y1 = max(0, min(Self.imageHeight - 1, y0 + 1))
+
+        // wrap horizontally to avoid a seam
+        let x1 = (x0 + 1) % Self.imageWidth
+        let wrappedX0 = ((x0 % Self.imageWidth) + Self.imageWidth) % Self.imageWidth
+
+        let fx = x - Double(x0)
+        let fy = y - Double(y0)
+
+        let h00 = elevation(row: y0, col: wrappedX0)
+        let h10 = elevation(row: y0, col: x1)
+        let h01 = elevation(row: y1, col: wrappedX0)
+        let h11 = elevation(row: y1, col: x1)
+
+        let top = h00 * (1 - fx) + h10 * fx
+        let bottom = h01 * (1 - fx) + h11 * fx
+        return top * (1 - fy) + bottom * fy
+    }
+
+    private func elevation(row: Int, col: Int) -> Double {
+        Double(Self.moonElevationArray[row * Self.imageWidth + col])
     }
 }
