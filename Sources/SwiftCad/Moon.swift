@@ -109,7 +109,7 @@ struct Moon: Shape3D {
     let superCoolVersion: Bool = false
     let elevationMap: MoonElevationMap
     
-    init(baseRadius: Double = 100, subdivisions: Int = 8, exaggeration: Double = 3, elevationMap: MoonElevationMap = .default) {
+    init(baseRadius: Double = 100, subdivisions: Int = 7, exaggeration: Double = 3, elevationMap: MoonElevationMap = .default) {
         self.baseRadius = baseRadius
         self.subdivisions = subdivisions
         self.exaggeration = exaggeration
