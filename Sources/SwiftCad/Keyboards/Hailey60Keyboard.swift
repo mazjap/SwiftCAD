@@ -167,7 +167,8 @@ struct Hailey60KeyboardCase: Hailey60 {
     private let wedgeAngle: Angle?
     private let inverted: Bool
     
-    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, wedgeAngle: Angle? = nil, engraving: (any Geometry2D)?, inverted: Bool = false) {
+    // Private until I lock down how to resize and place custom engravings
+    private init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, wedgeAngle: Angle? = nil, engraving: (any Geometry2D)?, inverted: Bool = false) {
         self.dimensions = Hailey60Dimensions(microcontroller: microcontrollerDimensions, trrs: trrsDimensions)
         self.microcontroller = microcontrollerDimensions
         self.trrs = trrsDimensions
