@@ -16,8 +16,8 @@ enum Firework: CaseIterable {
         }
     }
     
-    var url: URL {
-        URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/fireworks/firework_\(rawValue).svg")
+    fileprivate var url: URL {
+        Bundle.module.url(forResource: "src/fireworks/firework_\(rawValue)", withExtension: "svg")!
     }
 }
 

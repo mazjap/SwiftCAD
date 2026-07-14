@@ -97,7 +97,7 @@ struct MoonElevationMap {
         Double(floats[row * width + col])
     }
     
-    static let `default` = try! MoonElevationMap(url: URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/moon_elevations.bin"), width: 2880, height: 1440)
+    static let `default` = try! MoonElevationMap(url: Bundle.module.url(forResource: "src/moon_elevations", withExtension: "bin")!, width: 2880, height: 1440)
 }
 
 struct Moon: Shape3D {

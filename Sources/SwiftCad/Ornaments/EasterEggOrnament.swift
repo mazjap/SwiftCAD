@@ -2,8 +2,9 @@ import Cadova
 import Foundation
 
 struct EasterEggOrnament: Shape3D {
+    private let url = Bundle.module.url(forResource: "src/egg", withExtension: "svg")!
     private var eggShape: any Geometry<D2> {
-        Import(svg: URL(filePath: "SwiftCad_SwiftCad.bundle/Contents/Resources/src/egg.svg"))
+        Import(svg: url)
             .scaled(0.4)
     }
     
