@@ -1,6 +1,19 @@
 import Cadova
 import Foundation
-import AppKit
+
+func openURL(_ url: URL) {
+    let process = Process()
+    #if os(macOS)
+    process.executableURL = URL(filePath: "/usr/bin/open")
+    #elseif os(Linux)
+    process.executableURL = URL(filePath: "/usr/bin/xdg-open")
+    #elseif os(Windows)
+    process.executableURL = URL(filePath: "C:\\Windows\\System32\\cmd.exe")
+    process.arguments = ["/c", "start", url.absoluteString]
+    #endif
+    process.arguments = [url.absoluteString]
+    try? process.run()
+}
 
 @main
 class Main {
@@ -80,6 +93,6 @@ class Main {
             }
         }
         
-        NSWorkspace.shared.open(URL(filePath: "./output"))
+        openURL(URL(filePath: "./output"))
     }
 }
