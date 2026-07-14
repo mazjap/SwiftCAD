@@ -162,21 +162,48 @@ struct Hailey60KeyboardCase: Hailey60 {
     let dimensions: Hailey60Dimensions
     let microcontroller: MicrocontrollerDimensions
     let trrs: TrrsDimensions
+    let engraving: (any Geometry2D)?
     
     private let wedgeAngle: Angle?
+    private let inverted: Bool
     
-    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, wedgeAngle: Angle? = .degrees(7)) {
+    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, wedgeAngle: Angle? = nil, engraving: (any Geometry2D)?, inverted: Bool = false) {
         self.dimensions = Hailey60Dimensions(microcontroller: microcontrollerDimensions, trrs: trrsDimensions)
         self.microcontroller = microcontrollerDimensions
         self.trrs = trrsDimensions
         self.wedgeAngle = wedgeAngle
+        self.engraving = engraving
+        self.inverted = inverted
+    }
+    
+    init(microcontrollerDimensions: MicrocontrollerDimensions, trrsDimensions: TrrsDimensions, wedgeAngle: Angle? = nil, engraving: String? = nil, inverted: Bool = false) {
+        self.init(
+            microcontrollerDimensions: microcontrollerDimensions,
+            trrsDimensions: trrsDimensions,
+            wedgeAngle: wedgeAngle,
+            engraving: engraving.map {
+                Text($0)
+                    .withFontSize(8)
+            },
+            inverted: inverted
+        )
     }
     
     var body: any Geometry3D {
-        if let wedgeAngle {
-            withWedge(angle: wedgeAngle)
+        let keyboard = Union {
+            if let wedgeAngle {
+                withWedge(angle: wedgeAngle)
+            } else {
+                withoutWedge
+            }
+        }
+        
+        if inverted {
+            keyboard
+                .flipped(along: .x)
+                .aligned(at: .left)
         } else {
-            withoutWedge
+            keyboard
         }
     }
     
@@ -203,20 +230,6 @@ struct Hailey60KeyboardCase: Hailey60 {
                         .extruded(height: dimensions.bottomSupportHeight)
                         .translated(z: dimensions.minThickness)
                 }
-            
-//            Union {
-//                for y in 1..<5 {
-//                    for x in 1..<6 {
-//                        Rectangle(dimensions.spacingBetweenSwitchHole)
-//                            .translated(
-//                                x: Double(x) * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - dimensions.spacingBetweenSwitchHole,
-//                                y: Double(y) * (dimensions.switchHoleSize + dimensions.spacingBetweenSwitchHole) - dimensions.spacingBetweenSwitchHole
-//                            )
-//                    }
-//                }
-//            }
-//            .extruded(height: dimensions.bottomSupportHeight)
-//            .translated(z: dimensions.minThickness)
             
             let filletRadius = dimensions.wallThickness / 2
             
@@ -246,6 +259,25 @@ struct Hailey60KeyboardCase: Hailey60 {
         }
         .subtracting {
             latches
+        }
+        .subtracting {
+            if let engraving {
+                let engravingHeight = dimensions.wallThickness / 4
+                var engravingShape = engraving
+                    .extruded(height: engravingHeight)
+                
+                if inverted {
+                    engravingShape = engravingShape
+                        .flipped(along: .x)
+                }
+                
+                engravingShape
+                    .aligned(at: .left)
+                    .rotated(x: .degrees(90), y: .zero, z: .degrees(-90), around: .left)
+                    .measuringBounds { shape, boundingBox in
+                        shape.translated(x: engravingHeight, y: dimensions.maxY, z: boundingBox.size.z / 4)
+                    }
+            }
         }
     }
 }

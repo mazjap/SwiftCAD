@@ -52,7 +52,8 @@ class Main {
                 Hailey60KeyboardCase(
                     microcontrollerDimensions: .myRp2040,
                     trrsDimensions: .mine,
-                    wedgeAngle: .degrees(10)
+                    wedgeAngle: .degrees(7),
+                    inverted: false
                 )
             }
             
